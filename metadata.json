@@ -1,0 +1,8 @@
+{
+  "name": "BRUTALWORK // Project Planner & Studio",
+  "description": "Planner proyek dan ruang kerja modern Neo-Brutalism dengan manajemen kanban, kalender terintegrasi, mode fokus kerja, analitik interaktif, dan multi-user sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
