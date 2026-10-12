@@ -37,7 +37,7 @@ export const SyncSettingsModal: React.FC<SyncSettingsModalProps> = ({
 }) => {
   const [importJsonText, setImportJsonText] = useState('');
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [copiedNotification, setCopiedNotification] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   if (!isOpen || !currentUser) return null;
 
@@ -216,20 +216,40 @@ export const SyncSettingsModal: React.FC<SyncSettingsModalProps> = ({
             <div>
               <div className="font-black text-xs uppercase font-mono">Muat Ulang Sampel Demo</div>
               <div className="text-xs text-black/70">
-                Kembalikan daftar proyek, tugas, dan jadwal kalender contoh awal.
+                Kembalikan daftar proyek, tugas, dan jadwal kalender contoh awal yang bersih.
               </div>
             </div>
-            <button
-              onClick={() => {
-                if (confirm('Muat ulang data contoh awal? Perubahan saat ini pada akun ini akan digantikan.')) {
-                  onDataReset();
-                  onClose();
-                }
-              }}
-              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 border-2 border-black text-red-800 text-xs font-black uppercase cursor-pointer whitespace-nowrap"
-            >
-              Reset ke Demo
-            </button>
+            {confirmReset ? (
+              <div className="flex items-center gap-1.5 bg-red-50 p-1.5 border-2 border-red-600">
+                <span className="text-[11px] font-bold text-red-700">Yakin reset?</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onDataReset();
+                    setConfirmReset(false);
+                    onClose();
+                  }}
+                  className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white text-[11px] font-black uppercase cursor-pointer"
+                >
+                  Ya, Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmReset(false)}
+                  className="px-2 py-1 bg-white text-black border border-black text-[11px] font-bold uppercase cursor-pointer"
+                >
+                  Batal
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmReset(true)}
+                className="px-3 py-1.5 bg-red-100 hover:bg-red-200 border-2 border-black text-red-800 text-xs font-black uppercase cursor-pointer whitespace-nowrap"
+              >
+                Reset ke Demo
+              </button>
+            )}
           </div>
         </div>
       </div>

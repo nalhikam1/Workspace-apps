@@ -28,8 +28,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const [deadline, setDeadline] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
+    setConfirmDelete(false);
     if (project) {
       setTitle(project.title);
       setDescription(project.description || '');
@@ -200,20 +202,38 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="pt-3 border-t-2 border-black flex items-center justify-between gap-2">
+          <div className="pt-3 border-t-2 border-black flex flex-wrap items-center justify-between gap-2">
             {project && onDeleteProject ? (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm(`Yakin ingin menghapus proyek "${project.title}"? Semua tugas terkait akan tetap disimpan.`)) {
-                    onDeleteProject(project.id);
-                    onClose();
-                  }
-                }}
-                className="px-3 py-2 bg-red-100 hover:bg-red-200 border-2 border-black text-red-700 text-xs font-black uppercase cursor-pointer"
-              >
-                Hapus Proyek
-              </button>
+              confirmDelete ? (
+                <div className="flex items-center gap-1.5 bg-red-50 p-1.5 border-2 border-red-600">
+                  <span className="text-[11px] font-bold text-red-700">Yakin hapus?</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onDeleteProject(project.id);
+                      onClose();
+                    }}
+                    className="px-2 py-1 bg-red-600 text-white text-[11px] font-black uppercase cursor-pointer hover:bg-red-700"
+                  >
+                    Ya, Hapus
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="px-2 py-1 bg-white text-black border border-black text-[11px] font-bold uppercase cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="px-3 py-2 bg-red-100 hover:bg-red-200 border-2 border-black text-red-700 text-xs font-black uppercase cursor-pointer"
+                >
+                  Hapus Proyek
+                </button>
+              )
             ) : <div />}
 
             <div className="flex items-center gap-2">

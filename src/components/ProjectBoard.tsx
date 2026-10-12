@@ -32,6 +32,7 @@ interface ProjectBoardProps {
   onStartWorkingOnTask: (task: Task) => void;
   selectedProjectId: string;
   onSelectProject: (projectId: string) => void;
+  onNavigateToProjectManager?: () => void;
 }
 
 const COLUMNS: { id: TaskStatus; label: string; color: string; badge: string }[] = [
@@ -52,6 +53,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   onStartWorkingOnTask,
   selectedProjectId,
   onSelectProject,
+  onNavigateToProjectManager,
 }) => {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
@@ -179,24 +181,26 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
               </button>
             </div>
 
-            {/* Manage Project Button if filtered */}
-            {activeProject ? (
+            {/* Project Management Action */}
+            {onNavigateToProjectManager && (
               <button
-                onClick={() => onOpenProjectModal(activeProject)}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-bold hover:bg-slate-50 cursor-pointer"
+                onClick={onNavigateToProjectManager}
+                title="Buka Pusat Kelola Semua Proyek"
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-[#FF7A00] hover:bg-orange-400 border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-black uppercase text-black cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
               >
                 <Settings2 size={14} />
                 <span>Kelola Proyek</span>
               </button>
-            ) : (
-              <button
-                onClick={() => onOpenProjectModal()}
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-bold hover:bg-slate-50 cursor-pointer"
-              >
-                <FolderPlus size={14} />
-                <span>+ Proyek</span>
-              </button>
             )}
+
+            <button
+              onClick={() => onOpenProjectModal(activeProject || undefined)}
+              title={activeProject ? `Edit proyek "${activeProject.title}"` : "Buat proyek baru"}
+              className="flex items-center gap-1 px-2.5 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-bold hover:bg-slate-50 cursor-pointer"
+            >
+              <FolderPlus size={14} />
+              <span>{activeProject ? 'Edit Proyek' : '+ Proyek'}</span>
+            </button>
 
             {/* Quick Add Task */}
             <button

@@ -10,7 +10,8 @@ import {
   UserCheck, 
   LogOut, 
   RefreshCw,
-  FolderPlus
+  FolderPlus,
+  FolderTree
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -107,6 +108,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <LayoutDashboard size={16} />
             <span className="hidden sm:inline">Analitik</span>
             <span className="sm:hidden">Dash</span>
+          </button>
+
+          <button
+            onClick={() => onTabChange('projects')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-bold border-2 border-black transition-all cursor-pointer whitespace-nowrap ${
+              activeTab === 'projects'
+                ? 'bg-[#FF7A00] text-black shadow-[3px_3px_0_0_#000] -translate-y-0.5'
+                : 'bg-white hover:bg-orange-50 shadow-[1px_1px_0_0_#000]'
+            }`}
+          >
+            <FolderTree size={16} />
+            <span>Kelola Proyek</span>
           </button>
 
           <button

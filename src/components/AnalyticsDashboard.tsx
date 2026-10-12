@@ -388,12 +388,20 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
               Ringkasan realisasi tiap proyek beserta deadline target.
             </p>
           </div>
-          <button
-            onClick={() => onNavigateTab('planner')}
-            className="text-xs font-black uppercase underline flex items-center gap-1 hover:text-black/70 cursor-pointer"
-          >
-            Buka di Planner &rarr;
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onNavigateTab('projects')}
+              className="text-xs font-black uppercase bg-[#FFE600] px-2.5 py-1 border-2 border-black shadow-[2px_2px_0_0_#000] flex items-center gap-1 hover:bg-amber-300 cursor-pointer"
+            >
+              Kelola Proyek &rarr;
+            </button>
+            <button
+              onClick={() => onNavigateTab('planner')}
+              className="text-xs font-black uppercase underline flex items-center gap-1 hover:text-black/70 cursor-pointer"
+            >
+              Buka di Planner &rarr;
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

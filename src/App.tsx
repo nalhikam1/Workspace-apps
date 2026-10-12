@@ -15,6 +15,7 @@ import { AuthModal } from './components/AuthModal';
 import { TaskModal } from './components/TaskModal';
 import { ProjectModal } from './components/ProjectModal';
 import { SyncSettingsModal } from './components/SyncSettingsModal';
+import { ProjectManager } from './components/ProjectManager';
 
 export default function App() {
   // Current user state (auto-initializes to guest or saved user on first visit)
@@ -137,11 +138,18 @@ export default function App() {
     });
   };
 
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = (projectId: string, deleteTasksToo = false) => {
     const updatedProjects = store.projects.filter(p => p.id !== projectId);
+    const updatedTasks = deleteTasksToo 
+      ? store.tasks.filter(t => t.projectId !== projectId)
+      : store.tasks.map(t => t.projectId === projectId ? { ...t, projectId: 'unassigned' } : t);
+    const updatedEvents = store.events.filter(e => e.projectId !== projectId);
+    
     saveStore({
       ...store,
       projects: updatedProjects,
+      tasks: updatedTasks,
+      events: updatedEvents,
     });
     if (selectedProjectId === projectId) {
       setSelectedProjectId('all');
@@ -236,6 +244,22 @@ export default function App() {
           />
         )}
 
+        {activeTab === 'projects' && (
+          <ProjectManager
+            projects={store.projects}
+            tasks={store.tasks}
+            onOpenProjectModal={handleOpenProjectModal}
+            onOpenTaskModal={handleOpenTaskModal}
+            onUpdateProject={handleSaveProject}
+            onDeleteProject={(projectId, deleteTasksToo) => handleDeleteProject(projectId, deleteTasksToo)}
+            onNavigateToPlanner={(projectId) => {
+              setSelectedProjectId(projectId);
+              setActiveTab('planner');
+            }}
+            onNavigateTab={setActiveTab}
+          />
+        )}
+
         {activeTab === 'planner' && (
           <ProjectBoard
             projects={store.projects}
@@ -247,6 +271,7 @@ export default function App() {
             onStartWorkingOnTask={handleStartWorkingOnTask}
             selectedProjectId={selectedProjectId}
             onSelectProject={setSelectedProjectId}
+            onNavigateToProjectManager={() => setActiveTab('projects')}
           />
         )}
 
