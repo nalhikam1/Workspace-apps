@@ -4,8 +4,9 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { User, Project, Task, TimeLog, CalendarEvent, UserDataStore, ViewTab, TaskStatus } from './types';
+import { User, Project, Task, TimeLog, CalendarEvent, UserDataStore, ViewTab, TaskStatus, ThemeMode } from './types';
 import { StorageService, getInitialData } from './services/storage';
+import { SoundEffects } from './services/soundEffects';
 import { Navbar } from './components/Navbar';
 import { AnalyticsDashboard } from './components/AnalyticsDashboard';
 import { ProjectBoard } from './components/ProjectBoard';
@@ -18,11 +19,48 @@ import { SyncSettingsModal } from './components/SyncSettingsModal';
 import { ProjectManager } from './components/ProjectManager';
 
 export default function App() {
+  // Theme mode: light or dark
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    try {
+      const stored = localStorage.getItem('workstudio_theme');
+      if (stored === 'dark' || stored === 'light') return stored;
+    } catch {}
+    return 'light';
+  });
+
+  // Sound effect state
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => SoundEffects.isSoundEnabled());
+
+  // Initialize global click sound and theme class
+  useEffect(() => {
+    SoundEffects.initGlobalClickSound();
+  }, []);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    try {
+      localStorage.setItem('workstudio_theme', theme);
+    } catch {}
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    SoundEffects.setSoundEnabled(next);
+  };
+
   // Current user state (auto-initializes to guest or saved user on first visit)
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const existing = StorageService.getCurrentUser();
     if (existing) return existing;
-    // Default 1-click seamless initial entry
     return StorageService.createGuestUser();
   });
 
@@ -99,7 +137,6 @@ export default function App() {
       updatedTasks = [taskToSave, ...store.tasks];
     }
 
-    // Also update active working task if it matches
     if (activeWorkingTask?.id === taskToSave.id) {
       setActiveWorkingTask(taskToSave);
     }
@@ -214,7 +251,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFDF5] text-black flex flex-col selection:bg-[#FFE600] selection:text-black">
+    <div className="min-h-screen bg-neutral-50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-50 flex flex-col transition-colors selection:bg-amber-400 selection:text-black">
       {/* Top Navigation */}
       <Navbar
         user={currentUser}
@@ -226,6 +263,12 @@ export default function App() {
         onLogout={handleLogout}
         onOpenSettings={() => setIsSyncModalOpen(true)}
         lastSyncedAt={store.lastSyncedAt}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        tasks={store.tasks}
+        onOpenTaskModal={handleOpenTaskModal}
       />
 
       {/* Main Content Area */}
@@ -301,15 +344,15 @@ export default function App() {
         )}
       </main>
 
-      {/* Footer in Neo-Brutalist design */}
-      <footer className="border-t-3 border-black bg-white py-6 px-4 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono font-bold">
+      {/* Footer in Work Studio modern minimal design */}
+      <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-6 px-4 mt-12 transition-colors">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono font-medium text-neutral-500 dark:text-neutral-400">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-[#FFE600] border border-black"></span>
-            <span>BRUTALWORK // PROJECT PLANNER & FOCUS STUDIO</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span className="font-bold text-neutral-800 dark:text-neutral-200">WORK STUDIO // PROJECT PLANNER & FOCUS</span>
           </div>
-          <div className="text-black/60">
-            Sistem Data Terisolasi Per-Pengguna · Neo-Brutalism Interface · Mode Tamu Cepat
+          <div>
+            Sistem Data Terisolasi Per-Pengguna · Minimalis Modern · Suara Alam & Pomodoro Fleksibel
           </div>
         </div>
       </footer>

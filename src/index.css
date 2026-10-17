@@ -1,98 +1,91 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+  }
+
+  .dark {
+    --bg-main: #090a0f;
+    --text-main: #f8fafc;
+  }
+
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #FFFDF5;
-    color: #111111;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   
   code, pre, kbd, samp, .font-mono {
     font-family: 'Space Mono', monospace;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-/* Neo-Brutalism Shadows and Patterns */
-.neo-box {
+/* Global Tactile Click Animation for All Interactive Elements */
+button, 
+.btn-interactive, 
+[role="button"], 
+input[type="checkbox"], 
+input[type="radio"],
+select {
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+button:active, 
+.btn-interactive:active, 
+[role="button"]:active {
+  transform: scale(0.96) translateY(1px);
+}
+
+/* Soft Modern Studio Card & Panel Styles */
+.studio-card {
   background-color: #ffffff;
-  border: 2px solid #000000;
-  box-shadow: 4px 4px 0px #000000;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
 }
 
-.neo-box-sm {
+.dark .studio-card {
+  background-color: #13141a;
+  border-color: #232634;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.studio-card-sm {
   background-color: #ffffff;
-  border: 2px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
 }
 
-.neo-box-lg {
-  background-color: #ffffff;
-  border: 3px solid #000000;
-  box-shadow: 6px 6px 0px #000000;
+.dark .studio-card-sm {
+  background-color: #13141a;
+  border-color: #232634;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
 }
 
-.neo-btn {
-  border: 2px solid #000000;
-  box-shadow: 3px 3px 0px #000000;
-  transition: all 0.12s ease-in-out;
-  font-weight: 700;
+/* Tabular figures utility */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.neo-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #000000;
-}
-
-.neo-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #000000;
-}
-
-.neo-btn-sm {
-  border: 2px solid #000000;
-  box-shadow: 2px 2px 0px #000000;
-  transition: all 0.1s ease-in-out;
-}
-
-.neo-btn-sm:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0px #000000;
-}
-
-.neo-btn-sm:active {
-  transform: translate(1px, 1px);
-  box-shadow: 0px 0px 0px #000000;
-}
-
-/* Halftone / Dot Grid background for canvas */
-.neo-dot-grid {
-  background-image: radial-gradient(#000000 1.2px, transparent 1.2px);
-  background-size: 20px 20px;
-}
-
-.neo-stripe {
-  background: repeating-linear-gradient(
-    -45deg,
-    #000000,
-    #000000 10px,
-    #FFE600 10px,
-    #FFE600 20px
-  );
-}
-
-/* Custom scrollbars in neo-brutalist style */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #f1efe7;
-  border-left: 2px solid #000;
-}
-::-webkit-scrollbar-thumb {
-  background: #000;
-  border: 1px solid #ffe600;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #333;
+/* Print Styles for PDF / Report Export */
+@media print {
+  header, nav, footer, button, .no-print {
+    display: none !important;
+  }
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .studio-card {
+    box-shadow: none !important;
+    border: 1px solid #cccccc !important;
+  }
 }

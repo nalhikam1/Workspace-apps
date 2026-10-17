@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, ProjectStatus } from '../types';
-import { X, Trash2, FolderPlus, Palette } from 'lucide-react';
+import { X, Trash2, FolderPlus } from 'lucide-react';
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface ProjectModalProps {
 }
 
 const PROJECT_ICONS = ['🚀', '⚡', '🛡️', '🎯', '🎨', '💼', '💡', '🔥', '⚙️', '📱', '🌐', '📊'];
-const PROJECT_COLORS = ['#FFE600', '#00F0FF', '#FF6AC2', '#00E599', '#FF7A00', '#A78BFA', '#F43F5E', '#38BDF8'];
+const PROJECT_COLORS = ['#F59E0B', '#06B6D4', '#EC4899', '#10B981', '#F97316', '#8B5CF6', '#F43F5E', '#3B82F6'];
 
 export const ProjectModal: React.FC<ProjectModalProps> = ({
   isOpen,
@@ -22,7 +22,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#FFE600');
+  const [color, setColor] = useState('#F59E0B');
   const [icon, setIcon] = useState('🚀');
   const [status, setStatus] = useState<ProjectStatus>('active');
   const [deadline, setDeadline] = useState('');
@@ -35,7 +35,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     if (project) {
       setTitle(project.title);
       setDescription(project.description || '');
-      setColor(project.color || '#FFE600');
+      setColor(project.color || '#F59E0B');
       setIcon(project.icon || '🚀');
       setStatus(project.status || 'active');
       setDeadline(project.deadline || '');
@@ -43,7 +43,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
     } else {
       setTitle('');
       setDescription('');
-      setColor('#FFE600');
+      setColor('#F59E0B');
       setIcon('🚀');
       setStatus('active');
       const nextMonth = new Date();
@@ -78,45 +78,45 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0_0_#000] w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div 
-          className="border-b-3 border-black p-4 flex items-center justify-between"
-          style={{ backgroundColor: color }}
+          className="p-4 flex items-center justify-between rounded-t-2xl border-b border-neutral-100 dark:border-neutral-800"
+          style={{ backgroundColor: `${color}20` }}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <span className="text-2xl">{icon}</span>
-            <h2 className="font-black text-lg uppercase tracking-wider text-black">
+            <h2 className="font-bold text-base text-neutral-900 dark:text-neutral-100 tracking-tight">
               {project ? 'Pengaturan Proyek' : 'Buat Proyek Baru'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
           <div>
-            <label className="block text-xs font-mono font-black uppercase mb-1">
+            <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
               Nama Proyek:
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Contoh: Redesign Aplikasi Web Neo-Brutalist"
-              className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-sm focus:outline-hidden focus:bg-amber-50"
+              placeholder="Contoh: Redesign Aplikasi Web"
+              className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs font-mono font-black uppercase mb-1">
+            <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
               Deskripsi Proyek:
             </label>
             <textarea
@@ -124,14 +124,14 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Target dan ruang lingkup pengerjaan..."
               rows={2}
-              className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-medium text-xs focus:outline-hidden focus:bg-amber-50"
+              className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-normal focus:outline-hidden text-neutral-900 dark:text-neutral-100"
             />
           </div>
 
           {/* Icon & Color Selector */}
-          <div className="bg-white border-2 border-black p-3.5 shadow-[3px_3px_0_0_#000] space-y-3">
+          <div className="bg-neutral-50 dark:bg-neutral-950/40 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3.5 space-y-3">
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1.5">
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1.5">
                 Pilih Icon Proyek:
               </label>
               <div className="flex flex-wrap gap-1.5">
@@ -140,8 +140,8 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                     key={ic}
                     type="button"
                     onClick={() => setIcon(ic)}
-                    className={`w-8 h-8 border-2 border-black flex items-center justify-center text-lg cursor-pointer ${
-                      icon === ic ? 'bg-black text-white' : 'bg-white hover:bg-slate-100'
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg cursor-pointer transition-all ${
+                      icon === ic ? 'bg-amber-500 text-white shadow-xs' : 'bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700'
                     }`}
                   >
                     {ic}
@@ -151,8 +151,8 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1.5">
-                Pilih Warna Aksen Proyek:
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1.5">
+                Pilih Warna Aksen:
               </label>
               <div className="flex flex-wrap gap-2">
                 {PROJECT_COLORS.map((c) => (
@@ -161,8 +161,8 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                     type="button"
                     onClick={() => setColor(c)}
                     style={{ backgroundColor: c }}
-                    className={`w-7 h-7 border-2 border-black cursor-pointer transition-transform ${
-                      color === c ? 'scale-115 ring-2 ring-black' : ''
+                    className={`w-7 h-7 rounded-full cursor-pointer transition-transform ${
+                      color === c ? 'scale-115 ring-2 ring-neutral-900 dark:ring-white ring-offset-2' : ''
                     }`}
                   />
                 ))}
@@ -173,13 +173,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
           {/* Status & Deadline */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                 Status Proyek:
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as ProjectStatus)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs focus:outline-hidden cursor-pointer"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden cursor-pointer text-neutral-800 dark:text-neutral-200"
               >
                 <option value="active">Active (Sedang Berjalan)</option>
                 <option value="completed">Completed (Selesai)</option>
@@ -189,38 +189,38 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                 Target Deadline:
               </label>
               <input
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs font-mono focus:outline-hidden"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium font-mono focus:outline-hidden text-neutral-800 dark:text-neutral-200"
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="pt-3 border-t-2 border-black flex flex-wrap items-center justify-between gap-2">
+          <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2">
             {project && onDeleteProject ? (
               confirmDelete ? (
-                <div className="flex items-center gap-1.5 bg-red-50 p-1.5 border-2 border-red-600">
-                  <span className="text-[11px] font-bold text-red-700">Yakin hapus?</span>
+                <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/40 p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60">
+                  <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300">Yakin hapus?</span>
                   <button
                     type="button"
                     onClick={() => {
                       onDeleteProject(project.id);
                       onClose();
                     }}
-                    className="px-2 py-1 bg-red-600 text-white text-[11px] font-black uppercase cursor-pointer hover:bg-red-700"
+                    className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold uppercase rounded-md cursor-pointer"
                   >
                     Ya, Hapus
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-2 py-1 bg-white text-black border border-black text-[11px] font-bold uppercase cursor-pointer"
+                    className="px-2 py-1 text-neutral-500 hover:text-neutral-700 text-[11px] font-medium cursor-pointer"
                   >
                     Batal
                   </button>
@@ -229,7 +229,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="px-3 py-2 bg-red-100 hover:bg-red-200 border-2 border-black text-red-700 text-xs font-black uppercase cursor-pointer"
+                  className="px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold uppercase cursor-pointer"
                 >
                   Hapus Proyek
                 </button>
@@ -240,13 +240,13 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-white hover:bg-slate-100 border-2 border-black text-xs font-bold uppercase cursor-pointer"
+                className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold uppercase cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#FFE600] hover:bg-[#ffe033] border-3 border-black shadow-[3px_3px_0_0_#000] active:translate-x-0.5 active:translate-y-0.5 text-xs font-black uppercase cursor-pointer"
+                className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs text-xs font-bold uppercase cursor-pointer transition-colors"
               >
                 Simpan Proyek
               </button>

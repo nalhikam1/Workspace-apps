@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project, Task, TaskStatus, Priority, ViewTab } from '../types';
 import confetti from 'canvas-confetti';
+import { SoundEffects } from '../services/soundEffects';
 import { 
   Kanban, 
   List, 
@@ -13,11 +14,8 @@ import {
   Calendar, 
   CheckSquare, 
   Play, 
-  MoreVertical, 
   Trash2, 
   Edit3, 
-  Layers, 
-  AlertCircle,
   FolderPlus,
   Settings2
 } from 'lucide-react';
@@ -35,12 +33,12 @@ interface ProjectBoardProps {
   onNavigateToProjectManager?: () => void;
 }
 
-const COLUMNS: { id: TaskStatus; label: string; color: string; badge: string }[] = [
-  { id: 'backlog', label: 'Backlog', color: '#E4E4E7', badge: 'IDEA' },
-  { id: 'todo', label: 'To Do', color: '#93C5FD', badge: 'READY' },
-  { id: 'in_progress', label: 'In Progress', color: '#FDE047', badge: 'WIP' },
-  { id: 'review', label: 'Review', color: '#C4B5FD', badge: 'CHECK' },
-  { id: 'done', label: 'Done', color: '#00E599', badge: 'SELESAI' },
+const COLUMNS: { id: TaskStatus; label: string; headerBg: string; badge: string }[] = [
+  { id: 'backlog', label: 'Backlog', headerBg: 'bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300', badge: 'IDEA' },
+  { id: 'todo', label: 'To Do', headerBg: 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300', badge: 'READY' },
+  { id: 'in_progress', label: 'In Progress', headerBg: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300', badge: 'WIP' },
+  { id: 'review', label: 'Review', headerBg: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300', badge: 'CHECK' },
+  { id: 'done', label: 'Done', headerBg: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300', badge: 'SELESAI' },
 ];
 
 export const ProjectBoard: React.FC<ProjectBoardProps> = ({
@@ -60,21 +58,18 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const [priorityFilter, setPriorityFilter] = useState<'all' | Priority>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
 
-  // Trigger celebratory confetti
   const triggerConfetti = () => {
+    SoundEffects.playCompletionChime();
     try {
       confetti({
         particleCount: 50,
         spread: 60,
         origin: { y: 0.8 },
-        colors: ['#FFE600', '#FF6AC2', '#00F0FF', '#00E599']
+        colors: ['#F59E0B', '#10B981', '#6366F1']
       });
-    } catch {
-      // fallback safe
-    }
+    } catch {}
   };
 
-  // Move task status forwards or backwards
   const handleMoveStatus = (task: Task, direction: 'next' | 'prev') => {
     const statusOrder: TaskStatus[] = ['backlog', 'todo', 'in_progress', 'review', 'done'];
     const currentIndex = statusOrder.indexOf(task.status);
@@ -95,27 +90,6 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     }
   };
 
-  // Toggle single subtask
-  const handleToggleSubtask = (task: Task, subtaskId: string) => {
-    const updatedSubtasks = task.subtasks.map(s => 
-      s.id === subtaskId ? { ...s, completed: !s.completed } : s
-    );
-    const allDone = updatedSubtasks.length > 0 && updatedSubtasks.every(s => s.completed);
-    
-    const updated: Task = {
-      ...task,
-      subtasks: updatedSubtasks,
-      status: allDone ? 'done' : task.status,
-      updatedAt: new Date().toISOString().split('T')[0]
-    };
-    onUpdateTask(updated);
-
-    if (allDone && task.status !== 'done') {
-      triggerConfetti();
-    }
-  };
-
-  // Filter tasks
   const filteredTasks = tasks.filter(task => {
     if (selectedProjectId !== 'all' && task.projectId !== selectedProjectId) return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter) return false;
@@ -123,7 +97,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const matchTitle = task.title.toLowerCase().includes(q);
-      const matchDesc = task.description.toLowerCase().includes(q);
+      const matchDesc = task.description?.toLowerCase().includes(q);
       const matchTags = task.tags?.some(t => t.toLowerCase().includes(q));
       if (!matchTitle && !matchDesc && !matchTags) return false;
     }
@@ -134,24 +108,24 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Top Planner Control Hub */}
-      <div className="bg-[#FFFDF5] border-3 border-black p-4 sm:p-5 shadow-[5px_5px_0_0_#000] space-y-4">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm space-y-4">
         {/* Header & View Switcher */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="bg-[#00F0FF] px-2 py-0.5 border-2 border-black font-mono font-bold text-xs uppercase shadow-[2px_2px_0_0_#000]">
-                PROJECT PLANNER //
+              <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 rounded-md font-mono font-bold text-xs uppercase tracking-wider">
+                PLANNER KERJA //
               </span>
-              <span className="text-xs font-mono text-black/60 font-bold">
+              <span className="text-xs font-mono text-neutral-500 font-medium tabular-nums">
                 {filteredTasks.length} TUGAS TERFILTER
               </span>
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 flex items-center gap-2">
               <span>Papan Kerja & Alur Tugas</span>
               {activeProject && (
-                <span className="text-sm font-bold bg-white px-2 py-0.5 border-2 border-black font-mono shadow-[2px_2px_0_0_#000]">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200">
                   {activeProject.icon} {activeProject.title}
                 </span>
               )}
@@ -160,23 +134,27 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
 
           <div className="flex flex-wrap items-center gap-2">
             {/* View Mode Toggle */}
-            <div className="flex border-2 border-black bg-white shadow-[2px_2px_0_0_#000]">
+            <div className="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-xl text-xs font-semibold">
               <button
                 onClick={() => setViewMode('kanban')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black cursor-pointer transition-colors ${
-                  viewMode === 'kanban' ? 'bg-[#FFE600]' : 'hover:bg-amber-50'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'kanban' 
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-xs' 
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
                 }`}
               >
-                <Kanban size={15} />
+                <Kanban size={14} />
                 <span>Kanban</span>
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-black border-l-2 border-black cursor-pointer transition-colors ${
-                  viewMode === 'list' ? 'bg-[#FFE600]' : 'hover:bg-amber-50'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'list' 
+                    ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-xs' 
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900'
                 }`}
               >
-                <List size={15} />
+                <List size={14} />
                 <span>Daftar</span>
               </button>
             </div>
@@ -186,7 +164,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
               <button
                 onClick={onNavigateToProjectManager}
                 title="Buka Pusat Kelola Semua Proyek"
-                className="flex items-center gap-1 px-2.5 py-1.5 bg-[#FF7A00] hover:bg-orange-400 border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-black uppercase text-black cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+                className="flex items-center gap-1 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 cursor-pointer transition-colors"
               >
                 <Settings2 size={14} />
                 <span>Kelola Proyek</span>
@@ -195,8 +173,7 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
 
             <button
               onClick={() => onOpenProjectModal(activeProject || undefined)}
-              title={activeProject ? `Edit proyek "${activeProject.title}"` : "Buat proyek baru"}
-              className="flex items-center gap-1 px-2.5 py-1.5 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] text-xs font-bold hover:bg-slate-50 cursor-pointer"
+              className="flex items-center gap-1 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-xl text-xs font-semibold text-neutral-700 dark:text-neutral-200 cursor-pointer transition-colors"
             >
               <FolderPlus size={14} />
               <span>{activeProject ? 'Edit Proyek' : '+ Proyek'}</span>
@@ -205,9 +182,9 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
             {/* Quick Add Task */}
             <button
               onClick={() => onOpenTaskModal(undefined, 'todo', selectedProjectId !== 'all' ? selectedProjectId : undefined)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-[#FFE600] hover:bg-[#ffe033] border-2 border-black shadow-[3px_3px_0_0_#000] text-xs font-black uppercase cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+              className="flex items-center gap-1 px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold uppercase shadow-xs cursor-pointer transition-colors"
             >
-              <Plus size={16} strokeWidth={3} />
+              <Plus size={15} />
               <span>Tambah Tugas</span>
             </button>
           </div>
@@ -215,17 +192,17 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
 
         {/* Project Selector Horizontal Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1">
-          <span className="text-[11px] font-mono font-bold uppercase text-black/60 mr-1 flex items-center gap-1">
+          <span className="text-[11px] font-mono font-medium uppercase text-neutral-400 mr-1 flex items-center gap-1">
             <Filter size={12} />
             <span>PILIH:</span>
           </span>
 
           <button
             onClick={() => onSelectProject('all')}
-            className={`px-3 py-1 text-xs font-bold border-2 border-black cursor-pointer transition-all whitespace-nowrap ${
+            className={`px-3 py-1 text-xs font-medium rounded-lg cursor-pointer transition-all whitespace-nowrap ${
               selectedProjectId === 'all'
-                ? 'bg-black text-white shadow-[2px_2px_0_0_#000]'
-                : 'bg-white hover:bg-zinc-100 shadow-[1px_1px_0_0_#000]'
+                ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-xs'
+                : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
             }`}
           >
             Semua Proyek ({projects.length})
@@ -238,47 +215,45 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
               <button
                 key={proj.id}
                 onClick={() => onSelectProject(proj.id)}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold border-2 border-black cursor-pointer transition-all whitespace-nowrap ${
+                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg cursor-pointer transition-all whitespace-nowrap ${
                   isSelected
-                    ? 'shadow-[3px_3px_0_0_#000] -translate-y-0.5'
-                    : 'bg-white hover:bg-slate-100 shadow-[1px_1px_0_0_#000]'
+                    ? 'shadow-xs font-bold'
+                    : 'bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700'
                 }`}
-                style={isSelected ? { backgroundColor: proj.color } : {}}
+                style={isSelected ? { backgroundColor: `${proj.color}25`, color: proj.color } : {}}
               >
                 <span>{proj.icon}</span>
                 <span>{proj.title}</span>
-                <span className="font-mono text-[10px] opacity-70">({count})</span>
+                <span className="font-mono text-[10px] opacity-75 tabular-nums">({count})</span>
               </button>
             );
           })}
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t-2 border-black">
-          {/* Search Box */}
-          <div className="flex items-center gap-2 bg-white border-2 border-black px-2.5 py-1.5 shadow-[2px_2px_0_0_#000]">
-            <Search size={15} className="text-black/60" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+          <div className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 rounded-xl px-3 py-1.5 text-xs">
+            <Search size={14} className="text-neutral-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari tugas atau tag..."
-              className="w-full text-xs font-bold bg-transparent focus:outline-hidden"
+              className="w-full font-medium bg-transparent focus:outline-hidden text-neutral-800 dark:text-neutral-200"
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="text-xs font-bold cursor-pointer">
+              <button onClick={() => setSearchQuery('')} className="text-neutral-400 hover:text-neutral-600 cursor-pointer">
                 ×
               </button>
             )}
           </div>
 
-          {/* Priority Filter */}
-          <div className="flex items-center gap-2 bg-white border-2 border-black px-2.5 py-1.5 shadow-[2px_2px_0_0_#000]">
-            <span className="text-[11px] font-mono font-bold text-black/60">PRIORITAS:</span>
+          <div className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 rounded-xl px-3 py-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+            <span className="text-[11px] font-mono text-neutral-400">PRIORITAS:</span>
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value as any)}
-              className="w-full text-xs font-bold bg-transparent focus:outline-hidden cursor-pointer"
+              className="w-full font-medium bg-transparent focus:outline-hidden cursor-pointer"
             >
               <option value="all">Semua Prioritas</option>
               <option value="urgent">Urgent</option>
@@ -288,13 +263,12 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
             </select>
           </div>
 
-          {/* Status Filter (useful in List mode) */}
-          <div className="flex items-center gap-2 bg-white border-2 border-black px-2.5 py-1.5 shadow-[2px_2px_0_0_#000]">
-            <span className="text-[11px] font-mono font-bold text-black/60">STATUS:</span>
+          <div className="flex items-center gap-2 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200 dark:border-neutral-700/80 rounded-xl px-3 py-1.5 text-xs text-neutral-700 dark:text-neutral-300">
+            <span className="text-[11px] font-mono text-neutral-400">STATUS:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full text-xs font-bold bg-transparent focus:outline-hidden cursor-pointer"
+              className="w-full font-medium bg-transparent focus:outline-hidden cursor-pointer"
             >
               <option value="all">Semua Status</option>
               <option value="backlog">Backlog</option>
@@ -316,16 +290,13 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
             return (
               <div 
                 key={col.id}
-                className="bg-[#FFFDF5] border-3 border-black shadow-[4px_4px_0_0_#000] flex flex-col min-h-[500px]"
+                className="bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col min-h-[500px] shadow-xs"
               >
                 {/* Column Header */}
-                <div 
-                  className="p-3 border-b-2 border-black flex items-center justify-between"
-                  style={{ backgroundColor: col.color }}
-                >
+                <div className={`p-3.5 border-b border-neutral-200 dark:border-neutral-800 rounded-t-2xl flex items-center justify-between ${col.headerBg}`}>
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-sm uppercase tracking-wider">{col.label}</span>
-                    <span className="w-5 h-5 bg-black text-white text-xs font-mono font-bold flex items-center justify-center">
+                    <span className="font-bold text-xs uppercase tracking-wider">{col.label}</span>
+                    <span className="w-5 h-5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[11px] font-mono font-bold flex items-center justify-center tabular-nums">
                       {columnTasks.length}
                     </span>
                   </div>
@@ -333,17 +304,17 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
                   <button
                     onClick={() => onOpenTaskModal(undefined, col.id, selectedProjectId !== 'all' ? selectedProjectId : undefined)}
                     title={`Tambah tugas ke ${col.label}`}
-                    className="p-1 bg-white border border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+                    className="p-1 rounded-md bg-white/80 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 hover:bg-white cursor-pointer"
                   >
                     <Plus size={14} />
                   </button>
                 </div>
 
-                {/* Column Body: Task Cards */}
+                {/* Column Cards */}
                 <div className="p-3 space-y-3 flex-1 overflow-y-auto max-h-[calc(100vh-320px)]">
                   {columnTasks.length === 0 ? (
-                    <div className="border-2 border-dashed border-black/30 p-6 text-center text-xs font-mono text-black/40">
-                      Belum ada tugas di kolom {col.label}.
+                    <div className="border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-6 text-center text-xs font-mono text-neutral-400">
+                      Kosong
                     </div>
                   ) : (
                     columnTasks.map((task) => {
@@ -354,118 +325,114 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
                       return (
                         <div
                           key={task.id}
-                          className="bg-white border-2 border-black p-3 shadow-[3px_3px_0_0_#000] hover:shadow-[4px_4px_0_0_#000] hover:-translate-y-0.5 transition-all group"
+                          className="bg-white dark:bg-neutral-800/90 border border-neutral-200 dark:border-neutral-700/80 rounded-xl p-3.5 shadow-xs hover:shadow-md hover:border-neutral-300 dark:hover:border-neutral-600 transition-all group"
                         >
-                          {/* Project & Priority Badges */}
+                          {/* Badges */}
                           <div className="flex items-center justify-between gap-1 mb-2">
                             {project && (
                               <span 
-                                className="text-[10px] font-black uppercase px-1.5 py-0.5 border border-black font-mono truncate max-w-[120px]"
-                                style={{ backgroundColor: project.color }}
+                                className="text-[10px] font-bold uppercase px-2 py-0.5 rounded font-mono truncate max-w-[120px]"
+                                style={{ backgroundColor: `${project.color}25`, color: project.color }}
                               >
                                 {project.icon} {project.title}
                               </span>
                             )}
 
-                            {/* Priority Indicator */}
-                            <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 border border-black font-mono ${
-                              task.priority === 'urgent' ? 'bg-[#FF6AC2] text-black' :
-                              task.priority === 'high' ? 'bg-[#FFE600] text-black' :
-                              task.priority === 'medium' ? 'bg-[#00F0FF] text-black' :
-                              'bg-zinc-100 text-black'
+                            <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded font-mono ${
+                              task.priority === 'urgent' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                              task.priority === 'high' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
+                              task.priority === 'medium' ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' :
+                              'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
                             }`}>
                               {task.priority}
                             </span>
                           </div>
 
-                          {/* Task Title */}
+                          {/* Title */}
                           <h3 
                             onClick={() => onOpenTaskModal(task)}
-                            className="font-black text-sm text-black leading-snug cursor-pointer hover:underline mb-1"
+                            className="font-bold text-sm text-neutral-900 dark:text-neutral-100 leading-snug cursor-pointer hover:text-amber-600 dark:hover:text-amber-400 mb-1"
                           >
                             {task.title}
                           </h3>
 
-                          {/* Task Description */}
                           {task.description && (
-                            <p className="text-xs text-black/70 line-clamp-2 mb-2 font-medium">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2 mb-2 font-normal">
                               {task.description}
                             </p>
                           )}
 
-                          {/* Subtasks Progress if any */}
+                          {/* Subtasks */}
                           {task.subtasks.length > 0 && (
-                            <div className="mb-2 bg-amber-50/60 border border-black p-1.5">
-                              <div className="flex justify-between text-[10px] font-mono font-bold mb-1">
+                            <div className="mb-2 bg-neutral-50 dark:bg-neutral-900 p-2 rounded-lg border border-neutral-100 dark:border-neutral-700/50">
+                              <div className="flex justify-between text-[10px] font-mono text-neutral-500 mb-1 tabular-nums">
                                 <span>Subtask</span>
                                 <span>{completedSubtasks}/{task.subtasks.length}</span>
                               </div>
-                              <div className="w-full h-1.5 bg-zinc-200 border border-black">
+                              <div className="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                                 <div 
-                                  className="h-full bg-[#00E599]"
+                                  className="h-full bg-emerald-500 rounded-full"
                                   style={{ width: `${(completedSubtasks / task.subtasks.length) * 100}%` }}
                                 />
                               </div>
                             </div>
                           )}
 
-                          {/* Metadata: Due Date & Estimated/Spent */}
-                          <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] font-mono font-bold text-black/70 pt-2 border-t border-black/20">
+                          {/* Meta: Due Date & Time */}
+                          <div className="flex flex-wrap items-center justify-between gap-1 text-[11px] font-mono text-neutral-500 pt-2 border-t border-neutral-100 dark:border-neutral-700/60 tabular-nums">
                             {task.dueDate && (
-                              <div className={`flex items-center gap-1 ${isOverdue ? 'text-red-600 font-black' : ''}`}>
+                              <div className={`flex items-center gap-1 ${isOverdue ? 'text-rose-600 font-bold' : ''}`}>
                                 <Calendar size={12} />
                                 <span>{task.dueDate}</span>
-                                {isOverdue && <span className="bg-red-600 text-white text-[9px] px-1 font-mono">LATE</span>}
+                                {isOverdue && <span className="bg-rose-500 text-white text-[9px] px-1 rounded font-mono">LATE</span>}
                               </div>
                             )}
 
                             {task.estimatedMinutes > 0 && (
-                              <div className="flex items-center gap-1 text-black/60">
+                              <div className="flex items-center gap-1">
                                 <Clock size={12} />
                                 <span>{task.timeSpentMinutes}/{task.estimatedMinutes}m</span>
                               </div>
                             )}
                           </div>
 
-                          {/* Action Buttons: Move Status & Start Work */}
-                          <div className="mt-3 pt-2 border-t-2 border-black flex items-center justify-between gap-1">
-                            {/* Start working mode */}
+                          {/* Action Buttons */}
+                          <div className="mt-3 pt-2 border-t border-neutral-100 dark:border-neutral-700/60 flex items-center justify-between gap-1">
                             <button
                               onClick={() => onStartWorkingOnTask(task)}
                               title="Buka di Mode Kerja Fokus"
-                              className="px-2 py-1 bg-[#00E599] hover:bg-[#00d08a] border border-black text-[11px] font-black uppercase flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-[11px] font-bold uppercase flex items-center gap-1 cursor-pointer transition-colors"
                             >
                               <Play size={10} fill="currentColor" />
                               <span>Fokus</span>
                             </button>
 
-                            {/* Move Prev / Next */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 text-neutral-500">
                               {col.id !== 'backlog' && (
                                 <button
                                   onClick={() => handleMoveStatus(task, 'prev')}
                                   title="Kembalikan status"
-                                  className="p-1 bg-white hover:bg-slate-100 border border-black cursor-pointer"
+                                  className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
                                 >
-                                  <ChevronLeft size={13} />
+                                  <ChevronLeft size={14} />
                                 </button>
                               )}
 
                               <button
                                 onClick={() => onOpenTaskModal(task)}
                                 title="Edit tugas"
-                                className="p-1 bg-white hover:bg-slate-100 border border-black cursor-pointer"
+                                className="p-1 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer"
                               >
-                                <Edit3 size={13} />
+                                <Edit3 size={14} />
                               </button>
 
                               {col.id !== 'done' && (
                                 <button
                                   onClick={() => handleMoveStatus(task, 'next')}
                                   title="Lanjutkan status"
-                                  className="p-1 bg-[#FFE600] hover:bg-amber-300 border border-black cursor-pointer"
+                                  className="p-1 rounded-md bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 text-neutral-800 dark:text-neutral-200 cursor-pointer"
                                 >
-                                  <ChevronRight size={13} />
+                                  <ChevronRight size={14} />
                                 </button>
                               )}
                             </div>
@@ -483,154 +450,151 @@ export const ProjectBoard: React.FC<ProjectBoardProps> = ({
 
       {/* VIEW MODE: HIGH-DENSITY LIST */}
       {viewMode === 'list' && (
-        <div className="bg-white border-3 border-black shadow-[5px_5px_0_0_#000] overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#FFE600] border-b-2 border-black font-black uppercase text-[11px] tracking-wider font-mono">
-                <th className="p-3 border-r-2 border-black w-10">OK</th>
-                <th className="p-3 border-r-2 border-black">Judul Tugas</th>
-                <th className="p-3 border-r-2 border-black">Proyek</th>
-                <th className="p-3 border-r-2 border-black">Status</th>
-                <th className="p-3 border-r-2 border-black">Prioritas</th>
-                <th className="p-3 border-r-2 border-black">Deadline</th>
-                <th className="p-3 border-r-2 border-black">Waktu</th>
-                <th className="p-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="p-8 text-center text-xs font-mono text-black/60 font-bold">
-                    Tidak ada tugas yang cocok dengan filter pencarian.
-                  </td>
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-neutral-50 dark:bg-neutral-800/70 border-b border-neutral-200 dark:border-neutral-700 font-mono text-[11px] text-neutral-500 uppercase tracking-wider">
+                  <th className="p-3.5 w-10 text-center">OK</th>
+                  <th className="p-3.5">Judul Tugas</th>
+                  <th className="p-3.5">Proyek</th>
+                  <th className="p-3.5">Status</th>
+                  <th className="p-3.5">Prioritas</th>
+                  <th className="p-3.5">Deadline</th>
+                  <th className="p-3.5">Waktu</th>
+                  <th className="p-3.5 text-right">Aksi</th>
                 </tr>
-              ) : (
-                filteredTasks.map((task) => {
-                  const project = projects.find(p => p.id === task.projectId);
-                  const isDone = task.status === 'done';
-                  const isOverdue = task.dueDate && task.dueDate < todayStr && !isDone;
+              </thead>
+              <tbody>
+                {filteredTasks.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="p-8 text-center text-xs font-mono text-neutral-400">
+                      Tidak ada tugas yang cocok.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredTasks.map((task) => {
+                    const project = projects.find(p => p.id === task.projectId);
+                    const isDone = task.status === 'done';
+                    const isOverdue = task.dueDate && task.dueDate < todayStr && !isDone;
 
-                  return (
-                    <tr 
-                      key={task.id} 
-                      className={`border-b-2 border-black/20 hover:bg-amber-50/50 transition-colors ${
-                        isDone ? 'bg-zinc-50 opacity-75' : ''
-                      }`}
-                    >
-                      {/* Checkbox Complete */}
-                      <td className="p-3 border-r-2 border-black text-center">
-                        <input
-                          type="checkbox"
-                          checked={isDone}
-                          onChange={() => {
-                            const newStatus: TaskStatus = isDone ? 'todo' : 'done';
-                            onUpdateTask({ ...task, status: newStatus });
-                            if (newStatus === 'done') triggerConfetti();
-                          }}
-                          className="w-4 h-4 cursor-pointer accent-black"
-                        />
-                      </td>
+                    return (
+                      <tr 
+                        key={task.id} 
+                        className={`border-b border-neutral-100 dark:border-neutral-800/60 hover:bg-neutral-50/80 dark:hover:bg-neutral-800/40 transition-colors ${
+                          isDone ? 'opacity-60 bg-neutral-50/40 dark:bg-neutral-900/40' : ''
+                        }`}
+                      >
+                        <td className="p-3.5 text-center">
+                          <input
+                            type="checkbox"
+                            checked={isDone}
+                            onChange={() => {
+                              const newStatus: TaskStatus = isDone ? 'todo' : 'done';
+                              onUpdateTask({ ...task, status: newStatus });
+                              if (newStatus === 'done') triggerConfetti();
+                            }}
+                            className="w-4 h-4 cursor-pointer accent-amber-500 rounded"
+                          />
+                        </td>
 
-                      {/* Title */}
-                      <td className="p-3 border-r-2 border-black">
-                        <div 
-                          onClick={() => onOpenTaskModal(task)}
-                          className={`font-black cursor-pointer hover:underline text-sm ${isDone ? 'line-through text-black/50' : 'text-black'}`}
-                        >
-                          {task.title}
-                        </div>
-                        {task.description && (
-                          <div className="text-[11px] text-black/60 line-clamp-1 font-medium">{task.description}</div>
-                        )}
-                      </td>
-
-                      {/* Project */}
-                      <td className="p-3 border-r-2 border-black whitespace-nowrap">
-                        {project ? (
-                          <span 
-                            className="px-2 py-0.5 border border-black text-[10px] font-black uppercase font-mono"
-                            style={{ backgroundColor: project.color }}
-                          >
-                            {project.icon} {project.title}
-                          </span>
-                        ) : '-'}
-                      </td>
-
-                      {/* Status */}
-                      <td className="p-3 border-r-2 border-black whitespace-nowrap">
-                        <select
-                          value={task.status}
-                          onChange={(e) => {
-                            const newStatus = e.target.value as TaskStatus;
-                            onUpdateTask({ ...task, status: newStatus });
-                            if (newStatus === 'done') triggerConfetti();
-                          }}
-                          className="border border-black px-1.5 py-0.5 text-[11px] font-bold font-mono bg-white cursor-pointer"
-                        >
-                          <option value="backlog">Backlog</option>
-                          <option value="todo">To Do</option>
-                          <option value="in_progress">In Progress</option>
-                          <option value="review">Review</option>
-                          <option value="done">Done</option>
-                        </select>
-                      </td>
-
-                      {/* Priority */}
-                      <td className="p-3 border-r-2 border-black whitespace-nowrap">
-                        <span className={`px-2 py-0.5 border border-black text-[10px] font-black uppercase font-mono ${
-                          task.priority === 'urgent' ? 'bg-[#FF6AC2]' :
-                          task.priority === 'high' ? 'bg-[#FFE600]' :
-                          task.priority === 'medium' ? 'bg-[#00F0FF]' : 'bg-zinc-100'
-                        }`}>
-                          {task.priority}
-                        </span>
-                      </td>
-
-                      {/* Due Date */}
-                      <td className="p-3 border-r-2 border-black whitespace-nowrap font-mono font-bold">
-                        <span className={isOverdue ? 'text-red-600' : 'text-black/80'}>
-                          {task.dueDate || '-'}
-                        </span>
-                        {isOverdue && <span className="ml-1 text-[9px] bg-red-600 text-white px-1">LATE</span>}
-                      </td>
-
-                      {/* Time Spent */}
-                      <td className="p-3 border-r-2 border-black whitespace-nowrap font-mono text-[11px]">
-                        {task.timeSpentMinutes} / {task.estimatedMinutes}m
-                      </td>
-
-                      {/* Actions */}
-                      <td className="p-3 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => onStartWorkingOnTask(task)}
-                            title="Buka di Mode Kerja"
-                            className="p-1.5 bg-[#00E599] border border-black hover:bg-emerald-400 cursor-pointer"
-                          >
-                            <Play size={12} fill="currentColor" />
-                          </button>
-                          <button
+                        <td className="p-3.5">
+                          <div 
                             onClick={() => onOpenTaskModal(task)}
-                            title="Edit"
-                            className="p-1.5 bg-white border border-black hover:bg-slate-100 cursor-pointer"
+                            className={`font-semibold cursor-pointer hover:underline text-sm ${
+                              isDone ? 'line-through text-neutral-400' : 'text-neutral-900 dark:text-neutral-100'
+                            }`}
                           >
-                            <Edit3 size={12} />
-                          </button>
-                          <button
-                            onClick={() => onDeleteTask(task.id)}
-                            title="Hapus"
-                            className="p-1.5 bg-red-100 border border-black hover:bg-red-200 cursor-pointer text-red-600"
+                            {task.title}
+                          </div>
+                          {task.description && (
+                            <div className="text-[11px] text-neutral-400 line-clamp-1">{task.description}</div>
+                          )}
+                        </td>
+
+                        <td className="p-3.5 whitespace-nowrap">
+                          {project ? (
+                            <span 
+                              className="px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono"
+                              style={{ backgroundColor: `${project.color}25`, color: project.color }}
+                            >
+                              {project.icon} {project.title}
+                            </span>
+                          ) : '-'}
+                        </td>
+
+                        <td className="p-3.5 whitespace-nowrap">
+                          <select
+                            value={task.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as TaskStatus;
+                              onUpdateTask({ ...task, status: newStatus });
+                              if (newStatus === 'done') triggerConfetti();
+                            }}
+                            className="border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 py-1 text-[11px] font-medium bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 cursor-pointer"
                           >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                            <option value="backlog">Backlog</option>
+                            <option value="todo">To Do</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="review">Review</option>
+                            <option value="done">Done</option>
+                          </select>
+                        </td>
+
+                        <td className="p-3.5 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase font-mono ${
+                            task.priority === 'urgent' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                            task.priority === 'high' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
+                            task.priority === 'medium' ? 'bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300' :
+                            'bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-300'
+                          }`}>
+                            {task.priority}
+                          </span>
+                        </td>
+
+                        <td className="p-3.5 whitespace-nowrap font-mono font-medium tabular-nums">
+                          <span className={isOverdue ? 'text-rose-600 font-bold' : 'text-neutral-600 dark:text-neutral-400'}>
+                            {task.dueDate || '-'}
+                          </span>
+                          {isOverdue && <span className="ml-1 text-[9px] bg-rose-500 text-white px-1 rounded">LATE</span>}
+                        </td>
+
+                        <td className="p-3.5 whitespace-nowrap font-mono text-[11px] text-neutral-500 tabular-nums">
+                          {task.timeSpentMinutes} / {task.estimatedMinutes}m
+                        </td>
+
+                        <td className="p-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => onStartWorkingOnTask(task)}
+                              title="Buka di Mode Kerja"
+                              className="p-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 cursor-pointer"
+                            >
+                              <Play size={12} fill="currentColor" />
+                            </button>
+                            <button
+                              onClick={() => onOpenTaskModal(task)}
+                              title="Edit"
+                              className="p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 cursor-pointer"
+                            >
+                              <Edit3 size={12} />
+                            </button>
+                            <button
+                              onClick={() => onDeleteTask(task.id)}
+                              title="Hapus"
+                              className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 hover:bg-rose-100 cursor-pointer"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

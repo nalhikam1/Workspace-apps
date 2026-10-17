@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User } from '../types';
 import { StorageService } from '../services/storage';
-import { X, Sparkles, User as UserIcon, LogIn, UserPlus, Zap } from 'lucide-react';
+import { X, Sparkles, UserPlus, Zap } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface AuthModalProps {
 }
 
 const AVATAR_EMOJIS = ['🚀', '⚡', '👾', '🔥', '🎯', '🛠️', '☕', '💻', '🎨', '🍕', '🦊', '⭐'];
-const AVATAR_COLORS = ['#FFE600', '#FF6AC2', '#00F0FF', '#00E599', '#FF7A00', '#C4B5FD'];
+const AVATAR_COLORS = ['#F59E0B', '#EC4899', '#06B6D4', '#10B981', '#F97316', '#8B5CF6'];
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
@@ -23,7 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState('⚡');
-  const [selectedColor, setSelectedColor] = useState('#FFE600');
+  const [selectedColor, setSelectedColor] = useState('#F59E0B');
   const [selectedRole, setSelectedRole] = useState('Lead Planner');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -68,46 +68,46 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0_0_#000] w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-[#FFE600] border-b-3 border-black p-4 flex items-center justify-between">
+        <div className="bg-amber-500 text-white p-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center gap-2">
-            <Zap className="fill-black" size={20} />
-            <h2 className="font-black text-lg uppercase tracking-wider">
+            <Zap className="fill-white" size={18} />
+            <h2 className="font-bold text-base tracking-wide">
               Autentikasi & Profil Pengguna
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="grid grid-cols-3 border-b-2 border-black bg-white">
+        <div className="grid grid-cols-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/60 p-1 text-xs font-semibold">
           <button
             onClick={() => { setActiveTab('guest'); setErrorMessage(''); }}
-            className={`py-2.5 text-xs sm:text-sm font-black border-r-2 border-black transition-colors cursor-pointer ${
-              activeTab === 'guest' ? 'bg-[#00F0FF] text-black' : 'hover:bg-slate-50'
+            className={`py-2 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'guest' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-xs' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
             ⚡ Mode Tamu
           </button>
           <button
             onClick={() => { setActiveTab('register'); setErrorMessage(''); }}
-            className={`py-2.5 text-xs sm:text-sm font-black border-r-2 border-black transition-colors cursor-pointer ${
-              activeTab === 'register' ? 'bg-[#FF6AC2] text-black' : 'hover:bg-slate-50'
+            className={`py-2 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'register' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-xs' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
             Daftar Akun
           </button>
           <button
             onClick={() => { setActiveTab('login'); setErrorMessage(''); }}
-            className={`py-2.5 text-xs sm:text-sm font-black transition-colors cursor-pointer ${
-              activeTab === 'login' ? 'bg-[#00E599] text-black' : 'hover:bg-slate-50'
+            className={`py-2 rounded-lg transition-colors cursor-pointer ${
+              activeTab === 'login' ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-50 shadow-xs' : 'text-neutral-500 hover:text-neutral-900'
             }`}
           >
             Ganti Akun
@@ -115,9 +115,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Tab Content */}
-        <div className="p-6">
+        <div className="p-6 text-xs">
           {errorMessage && (
-            <div className="mb-4 bg-red-100 border-2 border-red-600 text-red-900 px-3 py-2 text-xs font-bold font-mono">
+            <div className="mb-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 px-3 py-2 rounded-xl font-medium">
               ⚠️ {errorMessage}
             </div>
           )}
@@ -125,25 +125,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* GUEST TAB */}
           {activeTab === 'guest' && (
             <div className="space-y-4">
-              <div className="bg-[#FFF8D6] border-2 border-black p-4 shadow-[3px_3px_0_0_#000]">
-                <div className="font-black text-base uppercase mb-1 flex items-center gap-2">
-                  <span>🚀 Akses Kilat 1-Klik</span>
+              <div className="bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/60 p-4 rounded-xl space-y-2">
+                <div className="font-bold text-sm text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
+                  <Sparkles size={16} className="text-amber-500" />
+                  <span>Akses Kilat 1-Klik</span>
                 </div>
-                <p className="text-xs text-black/80 leading-relaxed font-medium">
-                  Coba semua fitur Project Planner, Kalender, Mode Kerja Pomodoro, dan Dashboard Analitik langsung tanpa perlu mendaftar email atau password.
+                <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed font-normal">
+                  Coba semua fitur Work Studio (Planner, Kalender, Pomodoro, dan Dashboard Analitik) tanpa perlu mendaftar email atau password.
                 </p>
-                <div className="mt-3 text-[11px] font-mono text-black/70">
+                <div className="text-[11px] font-mono text-neutral-500 dark:text-neutral-400 pt-1">
                   ✓ Data disimpan aman secara lokal per sesi<br />
-                  ✓ Tersedia contoh proyek nyata siap pakai<br />
+                  ✓ Contoh proyek siap pakai sudah tersedia<br />
                   ✓ Bisa di-upgrade ke akun permanen kapan saja
                 </div>
               </div>
 
               <button
                 onClick={handleGuestLogin}
-                className="w-full py-3 bg-[#FFE600] hover:bg-[#ffd700] border-3 border-black shadow-[4px_4px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none font-black text-base uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs font-bold text-sm tracking-wide flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
-                <Sparkles size={18} />
                 <span>Masuk Sebagai Tamu Sekarang</span>
               </button>
             </div>
@@ -153,27 +153,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {activeTab === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
               {currentUser?.isGuest && (
-                <div className="bg-[#00E599]/20 border-2 border-black p-3 text-xs font-bold text-black">
-                  🎉 Data proyek & tugas dari mode tamu Anda akan langsung disinkronkan ke akun permanen baru ini!
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl font-medium text-emerald-800 dark:text-emerald-300">
+                  🎉 Data dari mode tamu akan langsung disinkronkan ke akun permanen baru ini!
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1 font-mono">
-                  Nama Lengkap / Alias:
+                <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
+                  Nama Lengkap:
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Rian Hardianto"
-                  className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-sm focus:outline-hidden focus:bg-amber-50"
+                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1 font-mono">
+                <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                   Alamat Email:
                 </label>
                 <input
@@ -181,43 +181,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@perusahaan.com"
-                  className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-sm focus:outline-hidden focus:bg-amber-50"
+                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1 font-mono">
+                <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                   Peran / Jabatan:
                 </label>
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-sm focus:outline-hidden"
+                  className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden cursor-pointer text-neutral-800 dark:text-neutral-200"
                 >
                   <option value="Lead Project Planner">Lead Project Planner</option>
                   <option value="Product Designer">Product Designer</option>
                   <option value="Full-Stack Developer">Full-Stack Developer</option>
                   <option value="Marketing Specialist">Marketing Specialist</option>
-                  <option value="Creative Director">Creative Director</option>
                   <option value="Solo Founder / Freelancer">Solo Founder / Freelancer</option>
                 </select>
               </div>
 
-              {/* Avatar Emoji & Color Customizer */}
+              {/* Avatar Customizer */}
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-2 font-mono">
-                  Kustomisasi Avatar:
+                <label className="block font-mono font-medium uppercase text-neutral-500 mb-2">
+                  Avatar Profil:
                 </label>
                 <div className="flex items-center gap-3 mb-3">
                   <div 
-                    className="w-12 h-12 border-2 border-black shadow-[3px_3px_0_0_#000] flex items-center justify-center text-2xl font-bold"
+                    className="w-11 h-11 rounded-xl shadow-xs flex items-center justify-center text-xl font-bold"
                     style={{ backgroundColor: selectedColor }}
                   >
                     {selectedEmoji}
                   </div>
-                  <div className="text-xs font-bold text-black/70">
-                    Pilih ikon dan warna neo-brutalist favorit Anda.
+                  <div className="text-neutral-500 font-normal">
+                    Pilih ikon dan warna aksen favorit Anda.
                   </div>
                 </div>
 
@@ -227,8 +226,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       key={emoji}
                       type="button"
                       onClick={() => setSelectedEmoji(emoji)}
-                      className={`w-8 h-8 border-2 border-black flex items-center justify-center text-base cursor-pointer ${
-                        selectedEmoji === emoji ? 'bg-black text-white' : 'bg-white hover:bg-amber-100'
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-sm cursor-pointer ${
+                        selectedEmoji === emoji ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200'
                       }`}
                     >
                       {emoji}
@@ -243,8 +242,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       type="button"
                       onClick={() => setSelectedColor(color)}
                       style={{ backgroundColor: color }}
-                      className={`w-7 h-7 border-2 border-black cursor-pointer ${
-                        selectedColor === color ? 'scale-110 ring-2 ring-black' : ''
+                      className={`w-6 h-6 rounded-full cursor-pointer transition-transform ${
+                        selectedColor === color ? 'scale-115 ring-2 ring-neutral-900 dark:ring-white ring-offset-2' : ''
                       }`}
                     />
                   ))}
@@ -253,24 +252,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3 bg-[#00E599] hover:bg-[#00d08a] border-3 border-black shadow-[4px_4px_0_0_#000] active:translate-x-1 active:translate-y-1 active:shadow-none font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
+                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
-                <UserPlus size={18} />
-                <span>Buat Akun & Sinkronkan Data</span>
+                <UserPlus size={16} />
+                <span>Buat Akun & Sinkronkan</span>
               </button>
             </form>
           )}
 
-          {/* LOGIN / SWITCH ACCOUNT TAB */}
+          {/* LOGIN TAB */}
           {activeTab === 'login' && (
             <div className="space-y-4">
-              <p className="text-xs text-black/70 font-medium">
-                Pilih akun yang tersimpan pada peramban ini untuk berganti workspace:
+              <p className="text-neutral-500 font-normal">
+                Pilih profil akun yang tersimpan pada peramban ini:
               </p>
 
               {existingUsers.length === 0 ? (
-                <div className="border-2 border-dashed border-black p-4 text-center text-xs font-bold text-black/60">
-                  Belum ada profil akun lain yang tersimpan di browser ini. Silakan buat akun baru atau masuk sebagai tamu.
+                <div className="border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-4 text-center text-neutral-400 font-mono">
+                  Belum ada profil akun lain.
                 </div>
               ) : (
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -279,39 +278,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     return (
                       <div
                         key={u.id}
-                        className={`p-3 border-2 border-black flex items-center justify-between transition-all ${
+                        className={`p-3 rounded-xl border flex items-center justify-between transition-all ${
                           isCurrent
-                            ? 'bg-[#FFE600] shadow-[3px_3px_0_0_#000]'
-                            : 'bg-white hover:bg-slate-50 shadow-[2px_2px_0_0_#000]'
+                            ? 'bg-amber-500/10 border-amber-500'
+                            : 'bg-neutral-50 dark:bg-neutral-800/40 border-neutral-200 dark:border-neutral-700/60'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="w-10 h-10 border-2 border-black flex items-center justify-center text-xl"
-                            style={{ backgroundColor: u.avatarBg || '#FFE600' }}
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+                            style={{ backgroundColor: u.avatarBg || '#F59E0B' }}
                           >
                             {u.avatarEmoji || '⚡'}
                           </div>
                           <div>
-                            <div className="font-black text-sm flex items-center gap-1.5">
+                            <div className="font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-1.5">
                               <span>{u.name}</span>
                               {u.isGuest && (
-                                <span className="text-[10px] bg-black text-white px-1 font-mono">TAMU</span>
+                                <span className="text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 px-1 rounded font-mono">TAMU</span>
                               )}
                             </div>
-                            <div className="text-[11px] font-mono text-black/70">{u.email}</div>
+                            <div className="text-[11px] font-mono text-neutral-400">{u.email}</div>
                           </div>
                         </div>
 
                         {isCurrent ? (
-                          <span className="text-xs font-black font-mono bg-black text-white px-2 py-0.5">
+                          <span className="text-[10px] font-mono font-bold bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-2 py-0.5 rounded">
                             AKTIF
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSwitchUser(u.id)}
-                            className="px-2.5 py-1 bg-black text-white hover:bg-zinc-800 text-xs font-black uppercase cursor-pointer"
+                            className="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-lg text-xs font-semibold cursor-pointer"
                           >
                             Pilih
                           </button>

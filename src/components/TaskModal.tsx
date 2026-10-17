@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Project, Task, TaskStatus, Priority, Subtask } from '../types';
-import { X, Plus, Trash2, CheckCircle2, Clock, Calendar, Tag, FileText } from 'lucide-react';
+import { X, Plus, Trash2, Clock, Calendar } from 'lucide-react';
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -132,28 +132,28 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-[#FFFDF5] border-3 border-black shadow-[8px_8px_0_0_#000] w-full max-w-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-[#FFE600] border-b-3 border-black p-4 flex items-center justify-between sticky top-0 z-10">
+        <div className="bg-amber-500 text-white p-4 flex items-center justify-between sticky top-0 z-10 rounded-t-2xl">
           <div className="flex items-center gap-2">
-            <h2 className="font-black text-lg uppercase tracking-wider">
-              {task ? 'Edit Tugas Planner' : 'Tambah Tugas Baru'}
+            <h2 className="font-bold text-base uppercase tracking-wider">
+              {task ? 'Edit Tugas' : 'Tambah Tugas Baru'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-1 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+            className="p-1 rounded-lg hover:bg-amber-600 transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 text-xs">
           {/* Title */}
           <div>
-            <label className="block text-xs font-mono font-black uppercase mb-1">
+            <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
               Judul Tugas:
             </label>
             <input
@@ -161,7 +161,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Contoh: Selesaikan Prototipe Dashboard Analitik"
-              className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-sm focus:outline-hidden focus:bg-amber-50"
+              className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
               required
             />
           </div>
@@ -169,13 +169,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           {/* Project & Status */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                 Pilih Proyek:
               </label>
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs focus:outline-hidden cursor-pointer"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden cursor-pointer text-neutral-800 dark:text-neutral-200"
                 required
               >
                 {projects.map(p => (
@@ -187,13 +187,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
-                Status Kolom:
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
+                Status:
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs focus:outline-hidden cursor-pointer"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden cursor-pointer text-neutral-800 dark:text-neutral-200"
               >
                 <option value="backlog">Backlog</option>
                 <option value="todo">To Do</option>
@@ -207,13 +207,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           {/* Priority & Due Date & Estimated Minutes */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
-                Tingkat Prioritas:
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
+                Prioritas:
               </label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs focus:outline-hidden cursor-pointer"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium focus:outline-hidden cursor-pointer text-neutral-800 dark:text-neutral-200"
               >
                 <option value="urgent">🚨 Urgent</option>
                 <option value="high">⚡ High</option>
@@ -223,19 +223,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
-                Tenggat (Due Date):
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
+                Tenggat (Deadline):
               </label>
               <input
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs font-mono focus:outline-hidden"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium font-mono focus:outline-hidden text-neutral-800 dark:text-neutral-200"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono font-black uppercase mb-1">
+              <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
                 Estimasi (Menit):
               </label>
               <input
@@ -244,53 +244,52 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 step="15"
                 value={estimatedMinutes}
                 onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-bold text-xs font-mono focus:outline-hidden"
+                className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-medium font-mono focus:outline-hidden text-neutral-800 dark:text-neutral-200"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-mono font-black uppercase mb-1">
-              Deskripsi Tugas:
+            <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
+              Deskripsi:
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Jelaskan detail yang perlu diselesaikan..."
               rows={3}
-              className="w-full px-3 py-2 bg-white border-2 border-black shadow-[2px_2px_0_0_#000] font-medium text-xs focus:outline-hidden focus:bg-amber-50"
+              className="w-full px-3 py-2 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl font-normal focus:outline-hidden text-neutral-900 dark:text-neutral-100"
             />
           </div>
 
           {/* Subtasks Checklist */}
-          <div className="bg-white border-2 border-black p-3.5 shadow-[3px_3px_0_0_#000]">
-            <label className="block text-xs font-mono font-black uppercase mb-2">
-              Subtask & Langkah Pengerjaan ({subtasks.length}):
+          <div className="bg-neutral-50 dark:bg-neutral-950/40 border border-neutral-200 dark:border-neutral-800 rounded-xl p-3.5 space-y-2">
+            <label className="block font-mono font-medium uppercase text-neutral-500">
+              Checklist Subtask ({subtasks.length}):
             </label>
 
-            {/* List of subtasks */}
-            <div className="space-y-1.5 mb-2.5 max-h-40 overflow-y-auto">
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
               {subtasks.map((sub) => (
                 <div 
                   key={sub.id} 
-                  className="flex items-center justify-between gap-2 p-1.5 bg-[#FFFDF5] border border-black text-xs font-bold"
+                  className="flex items-center justify-between gap-2 p-2 bg-white dark:bg-neutral-800 border border-neutral-200/80 dark:border-neutral-700 rounded-lg text-xs"
                 >
                   <label className="flex items-center gap-2 cursor-pointer flex-1 truncate">
                     <input
                       type="checkbox"
                       checked={sub.completed}
                       onChange={() => handleToggleSubtask(sub.id)}
-                      className="accent-black cursor-pointer"
+                      className="accent-amber-500 cursor-pointer rounded"
                     />
-                    <span className={sub.completed ? 'line-through text-black/50' : 'text-black'}>
+                    <span className={sub.completed ? 'line-through text-neutral-400' : 'text-neutral-800 dark:text-neutral-200'}>
                       {sub.title}
                     </span>
                   </label>
                   <button
                     type="button"
                     onClick={() => handleDeleteSubtask(sub.id)}
-                    className="p-1 hover:text-red-600 cursor-pointer"
+                    className="p-1 text-neutral-400 hover:text-rose-500 cursor-pointer"
                   >
                     <Trash2 size={13} />
                   </button>
@@ -298,14 +297,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               ))}
             </div>
 
-            {/* Add subtask input */}
-            <div className="flex gap-1.5">
+            <div className="flex gap-1.5 pt-1">
               <input
                 type="text"
                 value={newSubtaskTitle}
                 onChange={(e) => setNewSubtaskTitle(e.target.value)}
                 placeholder="Tambah langkah subtask..."
-                className="flex-1 px-2.5 py-1.5 bg-[#FFFDF5] border border-black text-xs font-bold focus:outline-hidden"
+                className="flex-1 px-3 py-1.5 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg text-xs font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -316,7 +314,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <button
                 type="button"
                 onClick={handleAddSubtask}
-                className="px-3 py-1.5 bg-[#00F0FF] hover:bg-cyan-300 border border-black text-xs font-black uppercase cursor-pointer"
+                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold uppercase cursor-pointer"
               >
                 + Tambah
               </button>
@@ -325,14 +323,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
           {/* Tags */}
           <div>
-            <label className="block text-xs font-mono font-black uppercase mb-1">
+            <label className="block font-mono font-medium uppercase text-neutral-500 mb-1">
               Tag / Label (Tekan Enter):
             </label>
             <div className="flex flex-wrap gap-1.5 mb-1.5">
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="bg-[#FFE600] border border-black text-[11px] font-mono font-black px-2 py-0.5 flex items-center gap-1 shadow-[1px_1px_0_0_#000]"
+                  className="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded-md text-[11px] font-mono px-2 py-0.5 flex items-center gap-1"
                 >
                   #{tag}
                   <button
@@ -350,31 +348,31 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleAddTag}
-              placeholder="Ketik tag lalu tekan enter (cth: UI, Urgent, Sprint)..."
-              className="w-full px-3 py-1.5 bg-white border-2 border-black text-xs font-mono font-bold focus:outline-hidden"
+              placeholder="Ketik tag lalu tekan enter..."
+              className="w-full px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl text-xs font-mono font-medium focus:outline-hidden text-neutral-900 dark:text-neutral-100"
             />
           </div>
 
           {/* Submit Actions */}
-          <div className="pt-3 border-t-2 border-black flex flex-wrap items-center justify-between gap-2">
+          <div className="pt-3 border-t border-neutral-100 dark:border-neutral-800 flex flex-wrap items-center justify-between gap-2">
             {task && onDeleteTask ? (
               confirmDelete ? (
-                <div className="flex items-center gap-1.5 bg-red-50 p-1.5 border-2 border-red-600">
-                  <span className="text-[11px] font-bold text-red-700">Yakin hapus tugas?</span>
+                <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/40 p-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60">
+                  <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300">Yakin hapus?</span>
                   <button
                     type="button"
                     onClick={() => {
                       onDeleteTask(task.id);
                       onClose();
                     }}
-                    className="px-2 py-1 bg-red-600 text-white text-[11px] font-black uppercase cursor-pointer hover:bg-red-700"
+                    className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold uppercase rounded-md cursor-pointer"
                   >
                     Ya, Hapus
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmDelete(false)}
-                    className="px-2 py-1 bg-white text-black border border-black text-[11px] font-bold uppercase cursor-pointer"
+                    className="px-2 py-1 text-neutral-500 hover:text-neutral-700 text-[11px] font-medium cursor-pointer"
                   >
                     Batal
                   </button>
@@ -383,7 +381,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
-                  className="px-3 py-2 bg-red-100 hover:bg-red-200 border-2 border-black text-red-700 text-xs font-black uppercase cursor-pointer"
+                  className="px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl text-xs font-semibold uppercase cursor-pointer"
                 >
                   Hapus Tugas
                 </button>
@@ -394,13 +392,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-white hover:bg-slate-100 border-2 border-black text-xs font-bold uppercase cursor-pointer"
+                className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded-xl text-xs font-semibold uppercase cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#FFE600] hover:bg-[#ffe033] border-3 border-black shadow-[3px_3px_0_0_#000] active:translate-x-0.5 active:translate-y-0.5 text-xs font-black uppercase cursor-pointer"
+                className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-xs text-xs font-bold uppercase cursor-pointer transition-colors"
               >
                 Simpan Tugas
               </button>

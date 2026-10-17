@@ -10,8 +10,10 @@ import {
   Layers, 
   ArrowUpRight,
   Filter,
-  Calendar,
-  Sparkles
+  Download,
+  Printer,
+  Sparkles,
+  FileSpreadsheet
 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -70,58 +72,92 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     low: filteredTasks.filter(t => t.priority === 'low').length,
   };
 
-  // Generate 7-Day Velocity Data for interactive chart
+  // Generate 7-Day Velocity Data
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const dateStr = d.toISOString().split('T')[0];
     const dayName = d.toLocaleDateString('id-ID', { weekday: 'short' });
 
-    // Completed on this day (approx using task updatedAt or created)
     const tasksDone = filteredTasks.filter(t => t.status === 'done' && t.updatedAt === dateStr).length;
-    // Focus minutes on this day
     const minutes = filteredLogs.filter(l => l.date === dateStr).reduce((a, b) => a + b.durationMinutes, 0);
 
     return {
       dateStr,
       dayName,
-      tasksDone: Math.max(tasksDone, (i === 5 ? 2 : i === 6 ? 1 : 0)), // realistic bump for demo feel
+      tasksDone: Math.max(tasksDone, (i === 5 ? 2 : i === 6 ? 1 : 0)),
       focusMinutes: minutes || (i === 6 ? 75 : i === 5 ? 50 : i === 4 ? 30 : 0)
     };
   });
 
   const maxMinutesInWeek = Math.max(...last7Days.map(d => d.focusMinutes), 60);
 
+  // EXPORT EXCEL (CSV)
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Judul Tugas', 'Proyek', 'Status', 'Prioritas', 'Deadline', 'Estimasi (Mnt)', 'Waktu Terpakai (Mnt)', 'Subtask'];
+    const rows = filteredTasks.map(t => {
+      const proj = projects.find(p => p.id === t.projectId)?.title || 'Tanpa Proyek';
+      const subtaskStr = `${t.subtasks.filter(s => s.completed).length}/${t.subtasks.length}`;
+      return [
+        t.id,
+        `"${t.title.replace(/"/g, '""')}"`,
+        `"${proj.replace(/"/g, '""')}"`,
+        t.status,
+        t.priority,
+        t.dueDate || '-',
+        t.estimatedMinutes,
+        t.timeSpentMinutes,
+        subtaskStr
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `workstudio-analitik-${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // PRINT / EXPORT PDF
+  const handlePrintReport = () => {
+    window.print();
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header & Project Filter Toolbar */}
-      <div className="bg-[#FFFDF5] border-3 border-black p-4 sm:p-6 shadow-[5px_5px_0_0_#000] flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Header & Controls Toolbar */}
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-[#FFE600] px-2 py-0.5 border-2 border-black font-mono font-bold text-xs uppercase shadow-[2px_2px_0_0_#000]">
-              VISUAL METRICS //
+            <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 rounded-md font-mono font-bold text-xs uppercase tracking-wider">
+              ANALITIK PRODUKTIVITAS //
             </span>
-            <span className="text-xs font-mono text-black/60 font-bold">
-              AKTIVITAS TERBARU
+            <span className="text-xs font-mono text-neutral-500 font-medium">
+              REAL-TIME INSIGHTS
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight">
-            Dashboard Analitik & Produktivitas
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
+            Dashboard Analitik & Kinerja
           </h1>
-          <p className="text-xs sm:text-sm text-black/80 font-medium mt-1">
-            Pantau progres proyek, waktu fokus ruang kerja, dan distribusi beban tugas Anda secara real-time.
+          <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 font-normal mt-1">
+            Pantau progres penyelesaian tugas, akumulasi jam kerja fokus, dan ekspor laporan kerja Anda.
           </p>
         </div>
 
-        {/* Project Selector Filter */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-white border-2 border-black px-3 py-2 shadow-[3px_3px_0_0_#000]">
-            <Filter size={15} />
-            <span className="text-xs font-mono font-bold">PROYEK:</span>
+        {/* Action Buttons: Filter, Export CSV, Print PDF */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Project Selector Filter */}
+          <div className="flex items-center gap-1.5 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700/80 rounded-xl px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-200">
+            <Filter size={14} className="text-neutral-400" />
             <select
               value={selectedProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="font-bold text-xs bg-transparent focus:outline-hidden cursor-pointer"
+              className="bg-transparent font-medium focus:outline-hidden cursor-pointer"
             >
               <option value="all">Semua Proyek ({projects.length})</option>
               {projects.map(p => (
@@ -132,134 +168,158 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             </select>
           </div>
 
+          {/* Export Excel (CSV) */}
+          <button
+            onClick={handleExportCSV}
+            title="Ekspor ke Excel (CSV)"
+            className="flex items-center gap-1.5 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
+          >
+            <FileSpreadsheet size={15} />
+            <span className="hidden sm:inline">Excel (CSV)</span>
+          </button>
+
+          {/* Print / Export PDF */}
+          <button
+            onClick={handlePrintReport}
+            title="Cetak atau Simpan sebagai PDF"
+            className="flex items-center gap-1.5 px-3 py-2 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
+          >
+            <Printer size={15} />
+            <span className="hidden sm:inline">Cetak / PDF</span>
+          </button>
+
           <button
             onClick={onOpenNewTask}
-            className="px-3 py-2 bg-[#FFE600] hover:bg-[#ffd700] border-2 border-black shadow-[3px_3px_0_0_#000] text-xs font-black uppercase cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
+            className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold uppercase cursor-pointer shadow-sm"
           >
             + Tugas
           </button>
         </div>
       </div>
 
-      {/* Top 4 Impact Metric Punchcards */}
+      {/* Top 4 Key Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Tingkat Penyelesaian */}
-        <div className="bg-white border-3 border-black p-4 shadow-[4px_4px_0_0_#000] relative overflow-hidden group hover:-translate-y-1 transition-transform">
+        {/* Card 1: Tingkat Selesai */}
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-all">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold uppercase text-black/60">Tingkat Selesai</span>
-            <div className="w-8 h-8 bg-[#00E599] border-2 border-black flex items-center justify-center font-bold">
+            <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider font-mono">Tingkat Selesai</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
               <CheckCircle2 size={18} />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black tracking-tight">{completionRate}%</div>
-          <div className="mt-2 text-xs font-bold text-black/70 flex items-center justify-between">
+          <div className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 tabular-nums">
+            {completionRate}%
+          </div>
+          <div className="mt-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center justify-between">
             <span>{completedTasks} dari {totalTasks} tugas selesai</span>
           </div>
-          {/* Brutal progress track */}
-          <div className="mt-2 w-full h-3 bg-zinc-100 border-2 border-black overflow-hidden">
+          <div className="mt-2 w-full h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-[#00E599] transition-all duration-500 border-r-2 border-black"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-500"
               style={{ width: `${completionRate}%` }}
             />
           </div>
         </div>
 
         {/* Card 2: Jam Fokus Kerja */}
-        <div className="bg-white border-3 border-black p-4 shadow-[4px_4px_0_0_#000] relative overflow-hidden group hover:-translate-y-1 transition-transform">
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-all">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold uppercase text-black/60">Waktu Fokus Log</span>
-            <div className="w-8 h-8 bg-[#FFE600] border-2 border-black flex items-center justify-center font-bold">
+            <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider font-mono">Waktu Fokus Log</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
               <Clock size={18} />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black tracking-tight">{totalFocusHours} <span className="text-lg font-mono">JAM</span></div>
-          <div className="mt-2 text-xs font-bold text-black/70">
-            {totalFocusMinutes} menit sesi Pomodoro / Studio
+          <div className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 tabular-nums">
+            {totalFocusHours} <span className="text-lg font-mono text-neutral-400">JAM</span>
+          </div>
+          <div className="mt-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 tabular-nums">
+            {totalFocusMinutes} menit sesi fokus tercatat
           </div>
           <button 
             onClick={() => onNavigateTab('working')}
-            className="mt-2 text-[11px] font-black uppercase text-black underline flex items-center gap-1 hover:text-black/70 cursor-pointer"
+            className="mt-2 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
-            Mulai Sesi Fokus &rarr;
+            Buka Ruang Fokus &rarr;
           </button>
         </div>
 
         {/* Card 3: Deadline & Perhatian */}
-        <div className={`border-3 border-black p-4 shadow-[4px_4px_0_0_#000] relative overflow-hidden group hover:-translate-y-1 transition-transform ${
-          overdueTasks.length > 0 ? 'bg-[#FF6AC2]/20' : 'bg-white'
+        <div className={`rounded-2xl p-5 border shadow-sm transition-all ${
+          overdueTasks.length > 0 
+            ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60' 
+            : 'bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800'
         }`}>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold uppercase text-black/60">Perlu Perhatian</span>
-            <div className="w-8 h-8 bg-[#FF6AC2] border-2 border-black flex items-center justify-center font-bold">
+            <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider font-mono">Perlu Perhatian</span>
+            <div className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold">
               <AlertTriangle size={18} />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black tracking-tight text-red-600">
+          <div className="text-3xl sm:text-4xl font-bold tracking-tight text-rose-600 dark:text-rose-400 tabular-nums">
             {overdueTasks.length + urgentTasks.length}
           </div>
-          <div className="mt-2 text-xs font-bold text-black/80 space-y-0.5">
+          <div className="mt-2 text-xs font-medium text-neutral-600 dark:text-neutral-400 space-y-0.5 tabular-nums">
             <div>⚠️ {overdueTasks.length} tugas terlambat</div>
-            <div>⚡ {urgentTasks.length} tugas prioritas urgent</div>
+            <div>⚡ {urgentTasks.length} prioritas urgent</div>
           </div>
         </div>
 
-        {/* Card 4: Velositas Aktif */}
-        <div className="bg-white border-3 border-black p-4 shadow-[4px_4px_0_0_#000] relative overflow-hidden group hover:-translate-y-1 transition-transform">
+        {/* Card 4: Sedang Berjalan */}
+        <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-all">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold uppercase text-black/60">Sedang Berjalan</span>
-            <div className="w-8 h-8 bg-[#00F0FF] border-2 border-black flex items-center justify-center font-bold">
+            <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider font-mono">Dalam Proses</span>
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
               <Flame size={18} />
             </div>
           </div>
-          <div className="text-3xl sm:text-4xl font-black tracking-tight">
-            {inProgressTasks + reviewTasks} <span className="text-sm font-mono text-black/60">TUGAS</span>
+          <div className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 tabular-nums">
+            {inProgressTasks + reviewTasks} <span className="text-sm font-mono text-neutral-400">TUGAS</span>
           </div>
-          <div className="mt-2 text-xs font-bold text-black/70">
-            {inProgressTasks} In Progress · {reviewTasks} Under Review
+          <div className="mt-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 tabular-nums">
+            {inProgressTasks} In Progress · {reviewTasks} Review
           </div>
           <button 
             onClick={() => onNavigateTab('planner')}
-            className="mt-2 text-[11px] font-black uppercase text-black underline flex items-center gap-1 hover:text-black/70 cursor-pointer"
+            className="mt-2 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
-            Buka Kanban Planner &rarr;
+            Buka di Planner &rarr;
           </button>
         </div>
       </div>
 
-      {/* Main Charts Grid: Velocity & Project Health */}
+      {/* Main Charts Grid: Velocity & Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column (2 Cols): Interactive 7-Day Velocity Chart */}
-        <div className="lg:col-span-2 bg-white border-3 border-black p-5 sm:p-6 shadow-[5px_5px_0_0_#000]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b-2 border-black pb-3">
+        {/* Left (2 Cols): 7-Day Velocity Interactive Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 border-b border-neutral-100 dark:border-neutral-800 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <BarChart3 size={20} />
-                <h3 className="font-black text-lg uppercase tracking-tight">
-                  Velositas Kerja & Jam Fokus 7 Hari
+                <BarChart3 size={18} className="text-amber-500" />
+                <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100">
+                  Velositas Kinerja & Jam Fokus 7 Hari
                 </h3>
               </div>
-              <p className="text-xs text-black/70 font-medium">
-                Arahkan kursor ke tiap batang untuk melihat statistik harian Anda.
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-normal">
+                Arahkan kursor ke tiap batang untuk melihat rincian menit fokus dan penyelesaian tugas.
               </p>
             </div>
-            <div className="flex items-center gap-3 text-xs font-bold font-mono">
+            <div className="flex items-center gap-3 text-xs font-medium font-mono text-neutral-500">
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-[#FFE600] border border-black inline-block"></span>
-                <span>Fokus (Menit)</span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                <span>Fokus (Mnt)</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-3 h-3 bg-[#00E599] border border-black inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
                 <span>Tugas Selesai</span>
               </span>
             </div>
           </div>
 
-          {/* Interactive SVG / Bar Visualizer */}
-          <div className="h-64 flex items-end justify-between gap-2 sm:gap-4 pt-6 pb-2 px-2 border-b-2 border-black bg-[#FFFDF5] relative">
-            {/* Horizontal guide lines */}
-            <div className="absolute inset-x-0 top-1/4 border-b border-dashed border-black/15 pointer-events-none" />
-            <div className="absolute inset-x-0 top-2/4 border-b border-dashed border-black/15 pointer-events-none" />
-            <div className="absolute inset-x-0 top-3/4 border-b border-dashed border-black/15 pointer-events-none" />
+          {/* Interactive Chart Bars */}
+          <div className="h-64 flex items-end justify-between gap-3 sm:gap-6 pt-6 pb-2 px-3 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-950/40 rounded-xl relative">
+            <div className="absolute inset-x-0 top-1/4 border-b border-dashed border-neutral-200/60 dark:border-neutral-800 pointer-events-none" />
+            <div className="absolute inset-x-0 top-2/4 border-b border-dashed border-neutral-200/60 dark:border-neutral-800 pointer-events-none" />
+            <div className="absolute inset-x-0 top-3/4 border-b border-dashed border-neutral-200/60 dark:border-neutral-800 pointer-events-none" />
 
             {last7Days.map((day, idx) => {
               const heightPercent = Math.max(12, Math.round((day.focusMinutes / maxMinutesInWeek) * 85));
@@ -274,7 +334,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 >
                   {/* Tooltip on hover */}
                   {isHovered && (
-                    <div className="absolute -top-12 z-20 bg-black text-white px-2.5 py-1 text-[11px] font-mono border-2 border-[#FFE600] shadow-[2px_2px_0_0_#FFE600] whitespace-nowrap animate-in fade-in">
+                    <div className="absolute -top-12 z-20 bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-3 py-1.5 rounded-lg text-[11px] font-mono shadow-md whitespace-nowrap animate-in fade-in tabular-nums">
                       <div className="font-bold">{day.dateStr}</div>
                       <div>⚡ {day.focusMinutes} mnt | 🎯 {day.tasksDone} selesai</div>
                     </div>
@@ -282,7 +342,7 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
                   {/* Task done indicator badge */}
                   {day.tasksDone > 0 && (
-                    <div className="mb-1 text-[10px] font-black font-mono bg-[#00E599] px-1 border border-black shadow-[1px_1px_0_0_#000]">
+                    <div className="mb-1 text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded">
                       +{day.tasksDone}
                     </div>
                   )}
@@ -290,15 +350,15 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                   {/* Main bar */}
                   <div 
                     style={{ height: `${heightPercent}%` }}
-                    className={`w-full max-w-[48px] border-2 border-black transition-all duration-200 ${
+                    className={`w-full max-w-[42px] rounded-t-lg transition-all duration-200 ${
                       isHovered 
-                        ? 'bg-[#00F0FF] shadow-[3px_3px_0_0_#000] -translate-y-1' 
-                        : 'bg-[#FFE600] shadow-[2px_2px_0_0_#000]'
+                        ? 'bg-amber-400 scale-102' 
+                        : 'bg-amber-500'
                     }`}
                   />
 
                   {/* Day label */}
-                  <div className="mt-2 text-xs font-mono font-bold uppercase text-black/80">
+                  <div className="mt-2 text-xs font-mono font-medium text-neutral-500 uppercase">
                     {day.dayName}
                   </div>
                 </div>
@@ -306,39 +366,39 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             })}
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs font-mono font-bold text-black/60">
+          <div className="mt-3 flex items-center justify-between text-xs font-mono text-neutral-400">
             <span>← 7 HARI LALU</span>
             <span>HARI INI →</span>
           </div>
         </div>
 
-        {/* Right Column: Status Flow & Priority Matrix */}
+        {/* Right Column: Status & Priority Matrix */}
         <div className="space-y-6">
-          {/* Flow Status Breakdown */}
-          <div className="bg-white border-3 border-black p-5 shadow-[5px_5px_0_0_#000]">
-            <h3 className="font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b-2 border-black pb-2">
-              <Layers size={16} />
-              <span>Distribusi Status Tugas</span>
+          {/* Status Breakdown */}
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+            <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b border-neutral-100 dark:border-neutral-800 pb-2">
+              <Layers size={16} className="text-neutral-500" />
+              <span>Status Tugas</span>
             </h3>
 
             <div className="space-y-2.5">
               {[
-                { label: 'Backlog', count: backlogTasks, color: '#E4E4E7' },
-                { label: 'To Do', count: todoTasks, color: '#93C5FD' },
-                { label: 'In Progress', count: inProgressTasks, color: '#FDE047' },
-                { label: 'In Review', count: reviewTasks, color: '#C4B5FD' },
-                { label: 'Done (Selesai)', count: completedTasks, color: '#00E599' },
+                { label: 'Backlog', count: backlogTasks, color: '#94a3b8' },
+                { label: 'To Do', count: todoTasks, color: '#38bdf8' },
+                { label: 'In Progress', count: inProgressTasks, color: '#f59e0b' },
+                { label: 'Review', count: reviewTasks, color: '#818cf8' },
+                { label: 'Done (Selesai)', count: completedTasks, color: '#10b981' },
               ].map(st => {
                 const pct = totalTasks > 0 ? Math.round((st.count / totalTasks) * 100) : 0;
                 return (
                   <div key={st.label} className="text-xs">
-                    <div className="flex justify-between font-bold mb-1">
+                    <div className="flex justify-between font-medium mb-1 text-neutral-700 dark:text-neutral-300">
                       <span>{st.label}</span>
-                      <span className="font-mono">{st.count} ({pct}%)</span>
+                      <span className="font-mono text-neutral-500 tabular-nums">{st.count} ({pct}%)</span>
                     </div>
-                    <div className="w-full h-2.5 bg-gray-100 border border-black overflow-hidden">
+                    <div className="w-full h-2 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                       <div 
-                        className="h-full border-r border-black transition-all"
+                        className="h-full rounded-full transition-all"
                         style={{ width: `${pct}%`, backgroundColor: st.color }}
                       />
                     </div>
@@ -349,55 +409,55 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
 
           {/* Priority Matrix */}
-          <div className="bg-[#FFFDF5] border-3 border-black p-5 shadow-[5px_5px_0_0_#000]">
-            <h3 className="font-black text-sm uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b-2 border-black pb-2">
-              <TrendingUp size={16} />
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-5 shadow-sm">
+            <h3 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 uppercase tracking-wider mb-3 flex items-center gap-1.5 border-b border-neutral-100 dark:border-neutral-800 pb-2">
+              <TrendingUp size={16} className="text-neutral-500" />
               <span>Matriks Prioritas</span>
             </h3>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="bg-[#FF6AC2]/30 border-2 border-black p-2.5 shadow-[2px_2px_0_0_#000]">
-                <div className="text-[10px] font-black uppercase text-black/70 font-mono">Urgent</div>
-                <div className="text-xl font-black">{priorityCounts.urgent}</div>
+              <div className="bg-rose-50 dark:bg-rose-950/30 rounded-xl p-3 border border-rose-100 dark:border-rose-900/40">
+                <div className="text-[10px] font-bold uppercase text-rose-700 dark:text-rose-400 font-mono">Urgent</div>
+                <div className="text-2xl font-bold text-rose-900 dark:text-rose-200 tabular-nums">{priorityCounts.urgent}</div>
               </div>
-              <div className="bg-[#FFE600]/30 border-2 border-black p-2.5 shadow-[2px_2px_0_0_#000]">
-                <div className="text-[10px] font-black uppercase text-black/70 font-mono">High</div>
-                <div className="text-xl font-black">{priorityCounts.high}</div>
+              <div className="bg-amber-50 dark:bg-amber-950/30 rounded-xl p-3 border border-amber-100 dark:border-amber-900/40">
+                <div className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400 font-mono">High</div>
+                <div className="text-2xl font-bold text-amber-900 dark:text-amber-200 tabular-nums">{priorityCounts.high}</div>
               </div>
-              <div className="bg-[#00F0FF]/30 border-2 border-black p-2.5 shadow-[2px_2px_0_0_#000]">
-                <div className="text-[10px] font-black uppercase text-black/70 font-mono">Medium</div>
-                <div className="text-xl font-black">{priorityCounts.medium}</div>
+              <div className="bg-sky-50 dark:bg-sky-950/30 rounded-xl p-3 border border-sky-100 dark:border-sky-900/40">
+                <div className="text-[10px] font-bold uppercase text-sky-700 dark:text-sky-400 font-mono">Medium</div>
+                <div className="text-2xl font-bold text-sky-900 dark:text-sky-200 tabular-nums">{priorityCounts.medium}</div>
               </div>
-              <div className="bg-zinc-100 border-2 border-black p-2.5 shadow-[2px_2px_0_0_#000]">
-                <div className="text-[10px] font-black uppercase text-black/70 font-mono">Low</div>
-                <div className="text-xl font-black">{priorityCounts.low}</div>
+              <div className="bg-neutral-50 dark:bg-neutral-800/40 rounded-xl p-3 border border-neutral-200/60 dark:border-neutral-700/60">
+                <div className="text-[10px] font-bold uppercase text-neutral-600 dark:text-neutral-400 font-mono">Low</div>
+                <div className="text-2xl font-bold text-neutral-800 dark:text-neutral-200 tabular-nums">{priorityCounts.low}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Projects Health Table / Grid */}
-      <div className="bg-white border-3 border-black p-5 sm:p-6 shadow-[5px_5px_0_0_#000]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b-2 border-black pb-3">
+      {/* Projects Health Table */}
+      <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 border-b border-neutral-100 dark:border-neutral-800 pb-3">
           <div>
-            <h3 className="font-black text-lg uppercase tracking-tight">
+            <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100">
               Kesehatan & Progres Semua Proyek
             </h3>
-            <p className="text-xs text-black/70 font-medium">
+            <p className="text-xs text-neutral-500 font-normal">
               Ringkasan realisasi tiap proyek beserta deadline target.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => onNavigateTab('projects')}
-              className="text-xs font-black uppercase bg-[#FFE600] px-2.5 py-1 border-2 border-black shadow-[2px_2px_0_0_#000] flex items-center gap-1 hover:bg-amber-300 cursor-pointer"
+              className="text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 px-3 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
             >
               Kelola Proyek &rarr;
             </button>
             <button
               onClick={() => onNavigateTab('planner')}
-              className="text-xs font-black uppercase underline flex items-center gap-1 hover:text-black/70 cursor-pointer"
+              className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
             >
               Buka di Planner &rarr;
             </button>
@@ -409,25 +469,24 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
             const pTasks = tasks.filter(t => t.projectId === proj.id);
             const pDone = pTasks.filter(t => t.status === 'done').length;
             const pPct = pTasks.length > 0 ? Math.round((pDone / pTasks.length) * 100) : 0;
-            const isDeadlineNear = proj.deadline && new Date(proj.deadline) <= new Date(Date.now() + 7 * 86400000);
 
             return (
               <div 
                 key={proj.id}
-                className="border-2 border-black p-4 bg-[#FFFDF5] shadow-[3px_3px_0_0_#000] hover:-translate-y-0.5 transition-transform flex flex-col justify-between"
+                className="border border-neutral-200 dark:border-neutral-800 p-4 bg-neutral-50/50 dark:bg-neutral-950/40 rounded-xl hover:border-neutral-300 dark:hover:border-neutral-700 transition-all flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5">
                       <span 
-                        className="w-8 h-8 border-2 border-black flex items-center justify-center text-lg font-bold shadow-[2px_2px_0_0_#000]"
-                        style={{ backgroundColor: proj.color }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-lg font-bold"
+                        style={{ backgroundColor: `${proj.color}25` }}
                       >
                         {proj.icon}
                       </span>
                       <div>
-                        <h4 className="font-black text-sm uppercase leading-tight line-clamp-1">{proj.title}</h4>
-                        <div className="text-[11px] font-mono text-black/60">
+                        <h4 className="font-bold text-sm text-neutral-900 dark:text-neutral-100 leading-tight line-clamp-1">{proj.title}</h4>
+                        <div className="text-[11px] font-mono text-neutral-500">
                           Target: {proj.deadline || 'Tanpa deadline'}
                         </div>
                       </div>
@@ -439,25 +498,25 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                         onNavigateTab('planner');
                       }}
                       title="Lihat tugas proyek ini di planner"
-                      className="p-1 bg-white border border-black hover:bg-black hover:text-white transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 cursor-pointer"
                     >
                       <ArrowUpRight size={14} />
                     </button>
                   </div>
 
-                  <p className="text-xs text-black/70 mt-2 line-clamp-2 font-medium">
+                  <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-2 line-clamp-2 font-normal">
                     {proj.description || 'Tidak ada deskripsi'}
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-black/20">
-                  <div className="flex justify-between text-xs font-bold font-mono mb-1">
-                    <span>{pDone}/{pTasks.length} TUGAS SELESAI</span>
-                    <span className="font-black">{pPct}%</span>
+                <div className="mt-4 pt-3 border-t border-neutral-200/60 dark:border-neutral-800">
+                  <div className="flex justify-between text-xs font-medium font-mono mb-1 text-neutral-600 dark:text-neutral-400">
+                    <span className="tabular-nums">{pDone}/{pTasks.length} SELESAI</span>
+                    <span className="font-bold text-neutral-900 dark:text-neutral-100 tabular-nums">{pPct}%</span>
                   </div>
-                  <div className="w-full h-3 bg-zinc-200 border-2 border-black overflow-hidden">
+                  <div className="w-full h-2 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden">
                     <div 
-                      className="h-full border-r-2 border-black transition-all"
+                      className="h-full rounded-full transition-all"
                       style={{ width: `${pPct}%`, backgroundColor: proj.color }}
                     />
                   </div>

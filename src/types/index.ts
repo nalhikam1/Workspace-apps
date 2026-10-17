@@ -82,3 +82,4 @@ export interface UserDataStore {
 }
 
 export type ViewTab = 'dashboard' | 'projects' | 'planner' | 'calendar' | 'working' | 'settings';
+export type ThemeMode = 'light' | 'dark';
